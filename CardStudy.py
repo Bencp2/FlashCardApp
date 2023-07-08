@@ -49,8 +49,7 @@ class CS:
         CS.createStudyDisplay()
 
         CS.createOptionsFrame()
-
-
+        #test
 
 
     def createDefaultData():
