@@ -1,14 +1,9 @@
 import database as db
 import window as w
-import sqlite3
 from tkinter import *
-from tkinter import messagebox
 import cardMenu as cm
-import MainFrame as sb
 import TitleLabel as tl
 from FrameApp import FrameApp
-from EntryApp import EntryApp
-import deckMenu as dm
 import cardMenu as cm
 from CurrentDeck import CDeck
 

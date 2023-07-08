@@ -1,12 +1,7 @@
 import database as db
 import window as w
-import sqlite3
-import tkinter as tk
-import tkinter.font as tkf
 import cardMenu as cm
-import CardStudy
-import deckMenu as dm
-import MainFrame as mf
+import CardStudy as cs
 import TitleLabel as tl
 from EntryApp import EntryApp
 from FrameApp import FrameApp
@@ -235,7 +230,7 @@ class CSS:
 
     def returnToStudyPage():
         CSS.studyOptionsPageDestroy()
-        CardStudy.CS.createStudyPage() 
+        cs.CS.createStudyPage() 
 
 
     

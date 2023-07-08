@@ -1,7 +1,5 @@
-import window as w
 from tkinter import *
 from FrameApp import FrameApp
-# import TitleLabel as tl
 
 class MainFrame(Frame):
 

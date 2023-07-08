@@ -1,11 +1,5 @@
-import database as db
-import window as w
-import sqlite3
-import tkinter as tk
-import tkinter.font as tkf
 import CurrentRadioButtonApp as crb
 from tkinter import *
-from tkinter import messagebox
 from RadioApp import RadiobuttonApp 
 
 class FrameApp(Frame):

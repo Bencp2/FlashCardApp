@@ -1,10 +1,5 @@
-import database as db
 import window as w
-import sqlite3
-import tkinter as tk
-import tkinter.font as tkf
 from tkinter import *
-from tkinter import messagebox
 
 
 class EntryApp(Entry):

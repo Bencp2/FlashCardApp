@@ -1,8 +1,6 @@
 import database as db
 import window as w
-import sqlite3
 from tkinter import *
-import tkinter.font as tkf
 import CardStudy
 import deckMenu as dm
 import MainFrame as mf

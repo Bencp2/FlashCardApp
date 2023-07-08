@@ -1,30 +1,36 @@
 import database as db
 import window as w
-import sqlite3
-import tkinter as tk
-import tkinter.font as tkf
 import cardMenu as cm
-import deckMenu as dm
 import MainFrame as mf
 import TitleLabel as tl
 from CardStudySettings import CSS
 from FrameApp import FrameApp
 from tkinter import *
-from tkinter import messagebox
 from CurrentDeck import CDeck
 import random
 import math
+
 class CS:
 
 
     optionsFrame = None
     selectionFrame = None
+    cardFrame = None
+    cardOptionsFrame = None
+    cardNumLabel = None
+    flipOrRevealButton = None
+    cardNum = 0
+    
+    flipOrRevealQuestionFrame = None
+    flipped = False
 
     deckStudyInfo = None
     scrollWindow = None
+    
 
     cardDisplays = list()
     cards = list()
+    
 
     crsr = db.database().cursor()
 
@@ -36,11 +42,10 @@ class CS:
         CS.selectionFrame = FrameApp(property(lambda: CS.scrollWindow.getAddFrame()))
         CS.selectionFrame.pack(pady = 30)
 
-
         CS.createDefaultData()
         
         CS.createCardList()
-        # CS.createStudyDisplay()
+        CS.createStudyDisplay()
 
         CS.createOptionsFrame()
 
@@ -96,13 +101,98 @@ class CS:
             for card in CS.cards:
                 if card[5] >= math.ceil((CS.deckStudyInfo[3] * (CS.deckStudyInfo[3] / 2)) / CS.deckStudyInfo[3]):
                     CS.cardDisplays.append(1)
-        else:
-            CS.cardDisplays.append(0)
+                else:
+                    CS.cardDisplays.append(0)
             
 
-    # def createStudyDisplay():
+    def createStudyDisplay():
+
+        
+        CS.cardNumLabel = Label(CS.selectionFrame, text = "1 out of " + str(len(CS.cards)), font = "Arial 20 bold")
+        CS.cardNumLabel.grid(row = 0, column = 0, pady = 10)
+
+        CS.cardFrame = FrameApp(property(lambda: CS.selectionFrame))
+        CS.cardFrame.grid(row = 1, column = 0, pady = 30)
+        
+        CS.cardOptionsFrame = FrameApp(property(lambda: CS.selectionFrame))
+        CS.cardOptionsFrame.config(relief = RIDGE, borderwidth= 5, width = 1000, height = 250)
+        CS.cardOptionsFrame.grid(row = 2, column = 0, pady = 20)
+        CS.cardOptionsFrame.pack_propagate(False)
+        
+        CS.flipOrRevealButton = Button(CS.cardOptionsFrame, width = 15, height = 2, font = "Arial 12")
+        # CS.flipOrRevealButton.grid(row = 0, column = 0, padx = 10, pady = 10, sticky = NW)
+        CS.flipOrRevealButton.pack(padx = 10, pady = 10, anchor = NW)
+
+        backButton = Button(CS.cardOptionsFrame, width = 15, height = 2, text = "Back", font = "Arial 12", state = DISABLED, command = lambda: CS.viewPreviousCard())
+        backButton.pack(padx = 10, pady = 10, side = LEFT, anchor = S)
+
+        fowardButton = Button(CS.cardOptionsFrame, width = 15, height = 2, text = "Foward", font = "Arial 12", command = lambda: CS.viewNextCard())
+        # fowardButton.grid(row = 2, column = 2, padx = 10, pady = 10, sticky = SE)
+        fowardButton.pack(padx = 10, pady = 10, side = RIGHT, anchor = S)
+
+        if len(CS.cards) <= 1:
+            fowardButton.config(state = DISABLED)
+        backButton.bind("<Button-1>", lambda event: CS.updateButtons(backButton, fowardButton))
+        fowardButton.bind("<Button-1>", lambda event: CS.updateButtons(fowardButton, backButton))
+
+        CS.flipOrRevealQuestionFrame = FrameApp(property(lambda: CS.cardOptionsFrame))
+        # CS.flipOrRevealQuestionFrame.grid(row = 1, column = 1, pady = 20)
+        CS.flipOrRevealQuestionFrame.pack(anchor = N)
+
+        CS.createCardDisplay()
+
+
+    def createCardDisplay():
+
         
 
+        if CS.cardDisplays[CS.cardNum]:
+            
+            
+            CS.flipOrRevealButton.config(text = "Reveal Back", command = lambda: CS.revealBack(), state = ACTIVE)
+        else:
+            
+            cardLabel = Label(CS.cardFrame, text = "Front", font = "Arial 20 bold underline")
+            cardLabel.grid(row = 0, column = 0)
+
+            cardVisual = Label(CS.cardFrame, text = CS.cards[0][2], width = 52, height = 5, font = "Arial 15", anchor = NW, wraplength= 570, relief= GROOVE, borderwidth= 5, justify= LEFT)
+            cardVisual.grid(row = 1, column = 0, pady = 10)
+
+            CS.flipOrRevealButton.config(text = "Flip", command = lambda: CS.flipCard(cardVisual, cardLabel), state = ACTIVE)
+            
+    def revealBack():
+        CS.flipOrRevealButton.config(state = DISABLED)
+
+
+    def flipCard(cardVisual, cardLabel):
+        if cardLabel.cget("text") == "Front":
+            cardLabel.config(text = "Back")
+            cardVisual.config(text = CS.cards[CS.cardNum][3])
+            if not CS.flipped:
+                CS.flipped = True
+                questionLabel = Label(CS.flipOrRevealQuestionFrame, text = "How did you do?", font = "Arial 12")
+                questionLabel.pack(pady = 10)
+                correctButton = Button(CS.flipOrRevealQuestionFrame, text = "Correct", width = 15, height = 2, command = lambda: CS.updateCardScore(True))
+                correctButton.pack(side = LEFT, padx = 10)
+                wrongButton = Button(CS.flipOrRevealQuestionFrame, text = "Incorrect", width = 15, height = 2, command = lambda: CS.updateCardScore(False))
+                wrongButton.pack(side = RIGHT, padx = 10)
+                
+
+        else:
+            cardLabel.config(text = "Front")
+            cardVisual.config(text = CS.cards[CS.cardNum][2])
+        
+    def updateCardScore(user_responce):
+        pass
+
+    def viewPreviousCard():
+        pass
+    
+    def viewNextCard():
+        pass
+    
+    def updateButtons(pressedButton, idleButton):
+        pass
 
     def createOptionsFrame():
 
@@ -118,7 +208,6 @@ class CS:
         settingsButton = Button(CS.optionsFrame ,text= "Settings", width=15, height=2, font = "Arial 12", command = lambda: CS.changeToSettings())
         settingsButton.grid(row = 2, column= 0, padx = 10, pady = 10)
      
-
 
     def refreshStudyPage():
         CS.studyPageDestroy()

@@ -1,5 +1,4 @@
 from tkinter import *
-import MainFrame as mf
 import window as w
 
 class TitleBar:

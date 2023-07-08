@@ -1,10 +1,8 @@
 import database as db
 import window as w
-import sqlite3
 from tkinter import *
 from tkinter import messagebox
 import cardMenu as cm
-import MainFrame as mf
 import TitleLabel as tl
 from FrameApp import FrameApp
 from EntryApp import EntryApp

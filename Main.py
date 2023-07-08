@@ -1,10 +1,4 @@
-import sqlite3
 import tkinter as tk
-# from pystray import MenuItem as item
-
-# import pystray
-# from PIL import Image, ImageTk
-
 from tkinter import messagebox
 from deckMenu import deckMenu as dm
 import window as w
