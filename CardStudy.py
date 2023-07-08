@@ -40,6 +40,7 @@ class CS:
         CS.scrollWindow.pack(fill = BOTH, expand = TRUE)
 
         CS.selectionFrame = FrameApp(property(lambda: CS.scrollWindow.getAddFrame()))
+        CS.selectionFrame.config(bg = '#54a6c4')
         CS.selectionFrame.pack(pady = 30)
 
         CS.createDefaultData()
@@ -108,15 +109,16 @@ class CS:
     def createStudyDisplay():
 
         
-        CS.cardNumLabel = Label(CS.selectionFrame, text = "1 out of " + str(len(CS.cards)), font = "Arial 20 bold")
+        CS.cardNumLabel = Label(CS.selectionFrame, text = "1 out of " + str(len(CS.cards)), font = "Arial 20 bold", bg = '#54a6c4')
         CS.cardNumLabel.grid(row = 0, column = 0, pady = 10)
 
         CS.cardFrame = FrameApp(property(lambda: CS.selectionFrame))
+        CS.cardFrame.config(bg = '#54a6c4')
         CS.cardFrame.grid(row = 1, column = 0, pady = 30)
         
         CS.cardOptionsFrame = FrameApp(property(lambda: CS.selectionFrame))
         CS.cardOptionsFrame.config(relief = RIDGE, borderwidth= 5, width = 1000, height = 250)
-        CS.cardOptionsFrame.grid(row = 2, column = 0, pady = 20)
+        CS.cardOptionsFrame.grid(row = 2, column = 0)
         CS.cardOptionsFrame.pack_propagate(False)
         
         CS.flipOrRevealButton = Button(CS.cardOptionsFrame, width = 15, height = 2, font = "Arial 12")
@@ -152,7 +154,7 @@ class CS:
             CS.flipOrRevealButton.config(text = "Reveal Back", command = lambda: CS.revealBack(), state = ACTIVE)
         else:
             
-            cardLabel = Label(CS.cardFrame, text = "Front", font = "Arial 20 bold underline")
+            cardLabel = Label(CS.cardFrame, text = "Front", font = "Arial 20 bold underline", bg = '#54a6c4')
             cardLabel.grid(row = 0, column = 0)
 
             cardVisual = Label(CS.cardFrame, text = CS.cards[0][2], width = 52, height = 5, font = "Arial 15", anchor = NW, wraplength= 570, relief= GROOVE, borderwidth= 5, justify= LEFT)
