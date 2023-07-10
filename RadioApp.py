@@ -25,7 +25,7 @@ class RadiobuttonApp(Radiobutton):
     
     def removeHoverColor(self):
         if self.value != self.variable.get():
-            self.config(background = w.window().cget('bg'))
+            self.config(background = '#f0f0f0')
         return self
 
 

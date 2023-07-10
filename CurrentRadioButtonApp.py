@@ -8,7 +8,7 @@ class CurrentRadioButton:
 
     def changeSelected(self, currSelected):
         currSelectedNode = currSelected.fget()
-        self.current.config(background = w.window().cget('bg'), activebackground = '#c1bec1')
+        self.current.config(background = '#f0f0f0', activebackground = '#c1bec1')
         currSelectedNode.config(background = '#27d8b2', activebackground = '#27d8b2')
         self.current = currSelectedNode
         return self
