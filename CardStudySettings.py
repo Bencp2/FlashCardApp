@@ -92,6 +92,10 @@ class CSS:
             CSS.crsr.execute("UPDATE deckstudy SET mastery_req = " + str(CSS.masteryEntry.savedResponce) + " WHERE deck_id = " + str(CDeck.deck[0]))
             CSS.crsr.execute("UPDATE cards SET mastered = TRUE WHERE deck_id = " + str(CDeck.deck[0]) + " AND correctNum >= " + str(CSS.masteryEntry.savedResponce))
             CSS.crsr.execute("UPDATE cards SET mastered = FALSE WHERE deck_id = " + str(CDeck.deck[0]) + " AND correctNum < " + str(CSS.masteryEntry.savedResponce))
+            numMastered = CSS.crsr.execute("SELECT * FROM cards WHERE deck_id = " + str(CDeck.deck[0]) + " AND mastered = TRUE").fetchall()
+            CSS.crsr.execute("UPDATE decks SET mastered = " + str(len(numMastered)) + " WHERE deck_id = " + str(CDeck.deck[0]))
+            CDeck.updateDeck()
+
             w.window().focus()
             
         if deckStudyInfo[4] != CSS.enableQuestFrame.var.get():
