@@ -24,6 +24,9 @@ class CS:
     backButton = None
     fowardButton = None
 
+    cardBackHeight = None
+    cardFrontHeight = None
+    
     masteryRemainLabel = None
     flipOrRevealQuestionFrame = None
     flipped = False
@@ -222,19 +225,24 @@ class CS:
 
                 cardLabel = Label(CS.cardFrame, text = "Front", font = "Arial 20 bold underline", bg = '#54a6c4')
                 cardLabel.grid(row = 0, column = 0)
+                cardVisualFrame = FrameApp(property(lambda: CS.cardFrame))
+                cardVisualFrame.grid(row = 1, column = 0, pady = 10)
 
-                cardVisual = Label(CS.cardFrame, text = CS.cards[CS.cardNum][2], width = 52, font = "Arial 15", anchor = NW, wraplength= 570, relief= GROOVE, borderwidth= 5, justify= LEFT)
-                cardVisual.grid(row = 1, column = 0, pady = 10)
-                CS.adjustCardVisualHeight(cardVisual)
+                cardVisual = Label(cardVisualFrame, text = CS.cards[CS.cardNum][2], width = 52, font = "Arial 15", anchor = NW, wraplength= 570, relief= GROOVE, borderwidth= 5, justify= LEFT)
+                cardVisual.pack(expand = True)
+                CS.cardFrontHeight = CS.adjustCardVisualHeight(cardVisual)
 
                 CS.flipOrRevealButton = Button(CS.cardOptionsFrame, width = 15, height = 2, font = "Arial 12", background = '#C3C7C7', text = "Flip", command = lambda: CS.flipCard(cardVisual, cardLabel), state = NORMAL)
                 CS.flipOrRevealButton.grid(row = 0, column = 0, padx = 10, pady = 10, sticky = NW)                
 
     @staticmethod
     def adjustCardVisualHeight(cardVisual):
-        visualHeight = int(((cardVisual.winfo_reqheight() - 30)/18) + 1)
+        visualHeight = int(((cardVisual.winfo_reqheight() - 35)/23) + 1)
         if visualHeight < 10:
             cardVisual.config(height = 10)
+            visualHeight = 10
+        return visualHeight
+
 
     def revealBack(responceText):
         CS.flipOrRevealButton.config(state = DISABLED)
@@ -263,21 +271,27 @@ class CS:
 
 
     def flipCard(cardVisual, cardLabel):
+        cardVisual.config(height = 0)
         if cardLabel.cget("text") == "Front":
             cardLabel.config(text = "Back")
             cardVisual.config(text = CS.cards[CS.cardNum][3])
-            CS.adjustCardVisualHeight(cardVisual)
 
             if not CS.flipped:
                 CS.flipped = True
+                CS.cardBackHeight = CS.adjustCardVisualHeight(cardVisual)
+
                 if not CS.cards[CS.cardNum][6]:
                     CS.flipOrRevealQuestionFrame.grid(row = 0, column = 1, rowspan = 2, pady = 20)
                 else:
                     CS.masteryRemainLabel.config(text = "You already have card mastery!")
+            else:
+                cardVisual.config(height = CS.cardBackHeight)
         else:
             cardLabel.config(text = "Front")
             cardVisual.config(text = CS.cards[CS.cardNum][2])
-        
+            cardVisual.config(height = CS.cardFrontHeight)
+
+
     def updateCardScore(user_responce, cButton, wButton):
         cButton.config(state = DISABLED)
         wButton.config(state = DISABLED)
@@ -298,7 +312,7 @@ class CS:
             elif (CS.cards[CS.cardNum][5]) < CS.deckStudyInfo[3]:
                 CS.masteryRemainLabel.config(text = "Amuont of correct answers until mastery: " + str(CS.deckStudyInfo[3] - (CS.cards[CS.cardNum][5] - 1)))
                 CS.crsr.execute("UPDATE cards SET correctNum = " + str(CS.cards[CS.cardNum][5] - 1) + " WHERE c_id = " + str(CS.cards[CS.cardNum][0]))
-                
+
 
         CS.cards[CS.cardNum] = CS.crsr.execute("SELECT * FROM cards WHERE c_id = " + str(CS.cards[CS.cardNum][0])).fetchone()
 
