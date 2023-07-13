@@ -27,14 +27,21 @@ class CS:
     cardBackHeight = None
     cardFrontHeight = None
     
+    statisticsFrame = None
     masteryRemainLabel = None
     flipOrRevealQuestionFrame = None
     flipped = False
+    isFlip = False
+
 
     deckStudyInfo = None
     scrollWindow = None
     
+    masteredStats = 0
+    correctStats = None
+    incorrectStats = None
 
+    statsLabels = list()
     cardDisplays = list()
     cards = list()
     
@@ -49,6 +56,9 @@ class CS:
         CS.selectionFrame = FrameApp(property(lambda: CS.scrollWindow.getAddFrame()))
         CS.selectionFrame.config(bg = '#54a6c4')
         CS.selectionFrame.pack(pady = 30)
+
+
+
         CS.createDefaultData()
         
         CS.createCardList()
@@ -139,7 +149,7 @@ class CS:
         CS.cardFrame.grid(row = 1, column = 0, pady = 30)
 
         CS.cardOptionsFrame = FrameApp(property(lambda: CS.selectionFrame))
-        CS.cardOptionsFrame.config(relief = RIDGE, borderwidth= 5, width = 1000, height = 250)
+        CS.cardOptionsFrame.config(relief = RIDGE, borderwidth= 5, width = 1000, height = 300)
         CS.cardOptionsFrame.grid(row = 2, column = 0)
         CS.cardOptionsFrame.grid_propagate(False)
         
@@ -180,11 +190,41 @@ class CS:
         CS.masteryRemainLabel = Label(CS.cardOptionsFrame, font = "Arial 12")
         CS.masteryRemainLabel.grid(row = 2, column = 1, pady = 10, padx = 10)
         CS.createCardDisplay()
+        if CS.deckStudyInfo[2] != 1:
+            CS.createStatsDisplay()
 
+    def createStatsDisplay():
+        CS.statisticsFrame = FrameApp(property(lambda: CS.cardOptionsFrame))
+        CS.statisticsFrame.config(relief= SOLID, borderwidth= 2)
+        CS.statisticsFrame.grid(row = 0, column = 2)
+        CS.masteredStats = 0
+
+        CS.statsLabels = list()
+        if CS.deckStudyInfo[4]:
+            CS.correctStats = [0] * 3
+            CS.incorrectStats = [0] * 3
+            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Cards mastered: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#bf7c14'))
+            CS.statsLabels.append(Label(CS.statisticsFrame, text = "\nTotal correct answers: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#37a749'))
+            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Correct answers with Flips: 0", font = "Arial 12", justify= LEFT, foreground= '#37a749'))
+            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Correct answers with Reveals: 0", font = "Arial 12", justify= LEFT, foreground= '#37a749'))
+            CS.statsLabels.append(Label(CS.statisticsFrame, text = "\nTotal incorrect answers: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#ea1517'))
+            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Incorrect answers with Flips: 0", font = "Arial 12", justify= LEFT, foreground= '#ea1517'))
+            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Incorrect answers with Reveals: 0", font = "Arial 12", justify= LEFT, foreground= '#ea1517'))
+
+        else:
+            CS.correctStats, CS.incorrectStats = ([0], [0])
+            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Cards mastered: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#bf7c14'))
+            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Total correct answers: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#37a749'))
+            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Total incorrect answers: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#ea1517'))
+        
+        labelNum = 0
+        for label in CS.statsLabels:
+            label.grid(row = labelNum, column = 0, sticky = W)
+            labelNum += 1
+        
 
     def createCardDisplay():            
             if CS.cardDisplays[CS.cardNum]:
-                
                 CS.selectionFrame.pack_configure(padx = 45, side = RIGHT)
                 frontLabel = Label(CS.cardFrame, text = "Front", font = "Arial 20 bold underline", bg = '#54a6c4')
                 frontLabel.grid(row = 0, column = 0)
@@ -221,6 +261,8 @@ class CS:
                 CS.flipOrRevealButton = Button(CS.cardOptionsFrame, width = 15, height = 2, font = "Arial 12", background = '#C3C7C7', text = "Reveal Back", command = lambda: CS.revealBack(backResponce), state = NORMAL)
                 CS.flipOrRevealButton.grid(row = 0, column = 0, padx = 10, pady = 10, sticky = NW)
             else:
+                CS.isFlip = True
+
                 CS.selectionFrame.pack_configure(padx = 0, side = TOP)
 
                 cardLabel = Label(CS.cardFrame, text = "Front", font = "Arial 20 bold underline", bg = '#54a6c4')
@@ -295,7 +337,7 @@ class CS:
     def updateCardScore(user_responce, cButton, wButton):
         cButton.config(state = DISABLED)
         wButton.config(state = DISABLED)
-
+        
         if user_responce:
             CS.crsr.execute("UPDATE cards SET correctNum = " + str(CS.cards[CS.cardNum][5] + 1) + " WHERE c_id = " + str(CS.cards[CS.cardNum][0]))
             if (CS.cards[CS.cardNum][5] + 1) >= CS.deckStudyInfo[3]:
@@ -304,9 +346,14 @@ class CS:
                     CS.crsr.execute("UPDATE decks SET mastered = " + str(CDeck.deck[2] + 1) + " WHERE deck_id = " + str(CDeck.deck[0]))
                     CDeck.updateDeck()
                 CS.masteryRemainLabel.config(text = "You have card mastery!")
+                CS.updateStats(user_responce, True)
+
             else:
                 CS.masteryRemainLabel.config(text = "Amount of correct answers until mastery: " + str(CS.deckStudyInfo[3] - (CS.cards[CS.cardNum][5] + 1)))
+                CS.updateStats(user_responce, False)
+
         else:
+            CS.updateStats(user_responce, False)
             if (CS.cards[CS.cardNum][5] - 1) < 0:
                 CS.masteryRemainLabel.config(text = "Amount of correct answers until mastery: " + str(CS.deckStudyInfo[3] - CS.cards[CS.cardNum][5]))
             elif (CS.cards[CS.cardNum][5]) < CS.deckStudyInfo[3]:
@@ -316,8 +363,47 @@ class CS:
 
         CS.cards[CS.cardNum] = CS.crsr.execute("SELECT * FROM cards WHERE c_id = " + str(CS.cards[CS.cardNum][0])).fetchone()
 
-    def viewPreviousCard():
+    def updateStats(isCorrect, isMastered):
+        if isMastered:
+            CS.masteredStats += 1
+            CS.statsLabels[0].config(text = "Cards mastered: " + str(CS.masteredStats))
+            
+        if isCorrect:
+            CS.correctStats[0] += 1
+            if not CS.deckStudyInfo[4]:
+                CS.statsLabels[1].config(text= "Total correct answers: " + str(CS.correctStats[0]))
+            else:
+                CS.statsLabels[1].config(text= "\nTotal correct answers: " + str(CS.correctStats[0]))
 
+            if CS.deckStudyInfo[4] and CS.isFlip:
+                
+                CS.correctStats[1] += 1
+                CS.statsLabels[2].config(text = "Correct answers with Flips: " + str(CS.correctStats[1]))
+
+            elif CS.deckStudyInfo[4] and not CS.isFlip:
+                
+                CS.correctStats[2] += 1
+                CS.statsLabels[3].config(text = "Correct answers with Reveals: " + str(CS.correctStats[2]))
+
+        else:
+            CS.incorrectStats[0] += 1
+            if not CS.deckStudyInfo[4]:
+                CS.statsLabels[2].config(text = "Total incorrect answers: " + str(CS.incorrectStats[0]))
+            else:
+                CS.statsLabels[4].config(text = "\nTotal incorrect answers: " + str(CS.incorrectStats[0]))
+                if CS.isFlip:
+                
+                    CS.incorrectStats[1] += 1
+                    CS.statsLabels[5].config(text = "Correct answers with Flips: " + str(CS.incorrectStats[1]))
+
+                else:                
+                    CS.incorrectStats[2] += 1
+                    CS.statsLabels[6].config(text = "Correct answers with Reveals: " + str(CS.incorrectStats[2]))
+
+
+
+    def viewPreviousCard():
+        CS.isFlip = False
         for child in CS.cardFrame.winfo_children():
             child.destroy()
         CS.flipped = False
@@ -325,7 +411,6 @@ class CS:
         for child in CS.flipOrRevealQuestionFrame.winfo_children():
             if child.cget("text") != "How did you do?":
                 child.configure(state = NORMAL)
-
         CS.masteryRemainLabel.config(text = "")
         CS.cardNum -= 1
         CS.cardNumLabel.config(text = str(CS.cardNum + 1) + " out of " + str(len(CS.cards)))
@@ -338,7 +423,7 @@ class CS:
 
     
     def viewNextCard():
-
+        CS.isFlip = False
         for child in CS.cardFrame.winfo_children():
             child.destroy()
         CS.flipped = False
