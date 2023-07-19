@@ -190,7 +190,7 @@ class CS:
         reshuffleButton.grid(row = 0, column = 1, padx = 10, pady = 10, sticky = NW)
 
         CS.masteryRemainLabel = Label(CS.cardOptionsFrame, font = "Arial 12")
-        CS.masteryRemainLabel.grid(row = 2, column = 1, columnspan= 2, pady = 10, padx = 10)
+        CS.masteryRemainLabel.grid(row = 2, column = 2, pady = 10, padx = 10)
 
 
         CS.createCardDisplay()
