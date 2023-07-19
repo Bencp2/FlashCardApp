@@ -215,7 +215,7 @@ class CSS:
     def createSettingButtons():
         CSS.saveAndRestoreButtonFrame = FrameApp(property (lambda: CSS.selectionFrame))
         CSS.saveAndRestoreButtonFrame.config(relief = RIDGE, borderwidth = 5)
-        CSS.saveAndRestoreButtonFrame.grid(row = 3, column = 0, padx = 25, pady = 20, sticky = NSEW)
+        CSS.saveAndRestoreButtonFrame.grid(row = 3, column = 0, columnspan = 2, padx = 25, pady = 20, sticky = W)
 
         saveButton = Button(CSS.saveAndRestoreButtonFrame, text = "Save Changes", command= lambda: CSS.updateSettings(), background = '#C3C7C7', font = "Arial 15")
         saveButton.grid(row = 0, column = 0, padx = 20, pady = 10)
@@ -223,9 +223,12 @@ class CSS:
         restoreDefaultButton = Button(CSS.saveAndRestoreButtonFrame, text = "Restore Default", command = lambda: CSS.restoreDefaultSettings(), background = '#C3C7C7', font = "Arial 15")
         restoreDefaultButton.grid(row = 0, column = 1, padx = 20, pady = 10)
 
-
+        resetDeckMasteryButton = Button(CSS.saveAndRestoreButtonFrame, text = "Reset Mastery Progress", command = lambda: CSS.resetMasteryProgress(), background= '#C3C7C7', font = "Arial 15")
+        resetDeckMasteryButton.grid(row = 0, column = 2, padx = 20, pady = 10)
     
-
+    def resetMasteryProgress():
+        CSS.crsr.execute("UPDATE cards SET correctNum = 0, mastered = FALSE WHERE deck_id = " + str(CDeck.deck[0]))
+        CSS.crsr.execute("UPDATE decks SET mastered = 0 WHERE deck_id = " + str(CDeck.deck[0]))
 
     def studyOptionsPageDestroy():
         CSS.optionsFrame.destroy()

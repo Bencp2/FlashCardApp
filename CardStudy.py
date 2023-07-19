@@ -99,7 +99,7 @@ class CS:
 
         if len(CS.cards) == 0:
             noCardLabel = Label(CS.selectionFrame, text = "No cards exist in deck to study!", width = 53, height = 6, font = "Arial 15", relief= GROOVE, borderwidth= 5)
-            noCardLabel.pack(pady = 30)
+            noCardLabel.grid(row = 0, column = 0, pady = 30)
 
 
         match CS.deckStudyInfo[2]:
@@ -109,7 +109,7 @@ class CS:
                         CS.cards.remove(card)
                         if len(CS.cards) == 0:
                             noCardLabel = Label(CS.selectionFrame, text = "All cards in this deck are mastered!\n\nTip: Increasing amount of correctness for mastery or reseting cards can make them unmastered", width = 53, height = 6, font = "Arial 15", wraplength = 570, relief= GROOVE, borderwidth= 5)
-                            noCardLabel.pack(pady = 30)
+                            noCardLabel.grid(row = 0, column = 0, pady = 30)
             case 1:
                 for card in CS.cards.copy():
 
@@ -117,7 +117,7 @@ class CS:
                         CS.cards.remove(card)
                         if len(CS.cards) == 0:
                             noCardLabel = Label(CS.selectionFrame, text = "No cards in this deck are mastered!", width = 53, height = 6, font = "Arial 15", relief= GROOVE, borderwidth= 5)
-                            noCardLabel.pack(pady = 30)
+                            noCardLabel.grid(row = 0, column = 0, pady = 30)
         
 
         if CS.deckStudyInfo[5]:
@@ -126,7 +126,7 @@ class CS:
                     CS.cards.remove(card)
                     if len(CS.cards) == 0:
                         noCardLabel = Label(CS.selectionFrame, text = "No cards in this deck are starred!", width = 53, height = 6, font = "Arial 15", relief= GROOVE, borderwidth= 5)
-                        noCardLabel.pack(pady = 30)
+                        noCardLabel.grid(row = 0, column = 0, pady = 30)
 
         if CS.deckStudyInfo[4]:
             for card in CS.cards:
@@ -161,7 +161,7 @@ class CS:
 
 
         CS.fowardButton = Button(CS.cardOptionsFrame, width = 15, height = 2, text = "Foward", font = "Arial 12", background = '#C3C7C7', command = lambda: CS.viewNextCard())
-        CS.fowardButton.grid(row = 2, column = 2, padx = 10, pady = 10, sticky = SE)
+        CS.fowardButton.grid(row = 2, column = 3, padx = 10, pady = 10, sticky = SE)
 
         if len(CS.cards) <= 1:
             CS.fowardButton.config(state = DISABLED)
@@ -179,24 +179,62 @@ class CS:
         correctButton.pack(side = LEFT, padx = 10)
         wrongButton.pack(side = RIGHT, padx = 10)
         
-        for n in range(2):
-            if n == 1:
-                CS.cardOptionsFrame.grid_columnconfigure(n, weight = 1)
-                CS.cardOptionsFrame.grid_rowconfigure(n, weight = 1)
-            else:   
-                CS.cardOptionsFrame.grid_columnconfigure(n, weight = 0)
-                CS.cardOptionsFrame.grid_rowconfigure(n, weight = 0)
-        
+        rowAndColumnConfiguration = [[0, 0], [1, 0], [0, 1], [0, 0]]
+        count = 0
+        for row_column in rowAndColumnConfiguration:
+            CS.cardOptionsFrame.grid_rowconfigure(count, weight = row_column[0])
+            CS.cardOptionsFrame.grid_columnconfigure(count, weight = row_column[1])
+            count += 1
+
+        reshuffleButton = Button(CS.cardOptionsFrame, text= "Reshuffle", font = "Arial 12", background = '#C3C7C7', width = 15, height = 2, command = lambda: CS.reshuffleCards())
+        reshuffleButton.grid(row = 0, column = 1, padx = 10, pady = 10, sticky = NW)
+
         CS.masteryRemainLabel = Label(CS.cardOptionsFrame, font = "Arial 12")
-        CS.masteryRemainLabel.grid(row = 2, column = 1, pady = 10, padx = 10)
+        CS.masteryRemainLabel.grid(row = 2, column = 1, columnspan= 2, pady = 10, padx = 10)
+
+
         CS.createCardDisplay()
         if CS.deckStudyInfo[2] != 1:
             CS.createStatsDisplay()
 
+    def reshuffleCards():
+        CS.isFlip = False
+        CS.cardNum = 0
+        CS.cards = list()
+        for label in CS.statsLabels:
+            label.destroy()
+        CS.statsLabels = list()
+        CS.cardDisplays = list()
+        for child in CS.cardFrame.winfo_children():
+            child.destroy()
+        CS.flipped = False
+        CS.flipOrRevealQuestionFrame.grid_forget()
+        for child in CS.flipOrRevealQuestionFrame.winfo_children():
+            if child.cget("text") != "How did you do?":
+                child.configure(state = NORMAL)
+        CS.masteryRemainLabel.config(text = "")
+       
+
+        CS.backButton.config(state = DISABLED)
+        CS.flipOrRevealButton.destroy()
+        CS.createCardList()
+        CS.cardNumLabel.config(text = "1 out of " + str(len(CS.cards)))
+        if len(CS.cards) > 1:
+            CS.fowardButton.config(state = NORMAL)
+        else:
+            CS.fowardButton.config(state = DISABLED)
+        CS.createStatsDisplay()
+        if len(CS.cards) > 0:
+            CS.createCardDisplay()
+        else:
+            CS.cardNumLabel.destroy()
+            CS.cardOptionsFrame.destroy()
+            CS.cardFrame.destroy()
+
     def createStatsDisplay():
         CS.statisticsFrame = FrameApp(property(lambda: CS.cardOptionsFrame))
         CS.statisticsFrame.config(relief= SOLID, borderwidth= 2)
-        CS.statisticsFrame.grid(row = 0, column = 2)
+        CS.statisticsFrame.grid(row = 0, column = 3)
         CS.masteredStats = 0
 
         CS.statsLabels = list()
@@ -307,7 +345,7 @@ class CS:
         backScroll.pack(side = RIGHT, fill = Y, expand = FALSE)
         backBox.grid(row = 3, column = 0, columnspan = 2, pady = 10)
         if not CS.cards[CS.cardNum][6]:
-            CS.flipOrRevealQuestionFrame.grid(row = 0, column = 1, rowspan = 2, pady = 20)
+            CS.flipOrRevealQuestionFrame.grid(row = 0, column = 2, rowspan = 2, pady = 20)
         else:
             CS.masteryRemainLabel.config(text = "You already have card mastery!")
 
@@ -323,7 +361,7 @@ class CS:
                 CS.cardBackHeight = CS.adjustCardVisualHeight(cardVisual)
 
                 if not CS.cards[CS.cardNum][6]:
-                    CS.flipOrRevealQuestionFrame.grid(row = 0, column = 1, rowspan = 2, pady = 20)
+                    CS.flipOrRevealQuestionFrame.grid(row = 0, column = 2, rowspan = 2, pady = 20)
                 else:
                     CS.masteryRemainLabel.config(text = "You already have card mastery!")
             else:
