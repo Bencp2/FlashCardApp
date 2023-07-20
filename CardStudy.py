@@ -381,7 +381,8 @@ class CS:
             if (CS.cards[CS.cardNum][5] + 1) >= CS.deckStudyInfo[3]:
                 if not CS.cards[CS.cardNum][6]:
                     CS.crsr.execute("UPDATE cards SET mastered = TRUE WHERE c_id = " + str(CS.cards[CS.cardNum][0]))
-                    CS.crsr.execute("UPDATE decks SET mastered = " + str(CDeck.deck[2] + 1) + " WHERE deck_id = " + str(CDeck.deck[0]))
+                    numMastered = len(CS.crsr.execute("SELECT * FROM cards WHERE deck_id = " + str(CDeck.deck[0]) + " AND mastered = True").fetchall())
+                    CS.crsr.execute("UPDATE decks SET mastered = " + str(numMastered) + " WHERE deck_id = " + str(CDeck.deck[0]))
                     CDeck.updateDeck()
                 CS.masteryRemainLabel.config(text = "You have card mastery!")
                 CS.updateStats(user_responce, True)

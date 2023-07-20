@@ -229,6 +229,7 @@ class CSS:
     def resetMasteryProgress():
         CSS.crsr.execute("UPDATE cards SET correctNum = 0, mastered = FALSE WHERE deck_id = " + str(CDeck.deck[0]))
         CSS.crsr.execute("UPDATE decks SET mastered = 0 WHERE deck_id = " + str(CDeck.deck[0]))
+        CDeck.updateDeck()
 
     def studyOptionsPageDestroy():
         CSS.optionsFrame.destroy()

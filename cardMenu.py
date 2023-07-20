@@ -179,7 +179,10 @@ class cardMenu:
     
     @staticmethod
     def deleteCard(card_id, cFrame):
+        isMastered = cardMenu.crsr.execute("SELECT mastered from cards WHERE c_id = " + str(card_id)).fetchone()
         cardMenu.crsr.execute("DELETE FROM cards WHERE c_id =" + str(card_id))
+        if isMastered:
+            cardMenu.crsr.execute("UPDATE decks SET mastered = " + str(CDeck.deck[2] - 1) + " WHERE deck_id = " + str(CDeck.deck[0]))
         cardMenu.crsr.execute("UPDATE decks SET size = " + str(CDeck.deck[3] - 1) + " WHERE deck_id = " + str(CDeck.deck[0]))
         db.database().commit()
         cFrame.destroy()
