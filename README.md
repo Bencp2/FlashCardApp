@@ -9,15 +9,17 @@ To start the application, run the file named "Main.py".
 # TODO
 
 Priority descending
-1. Update the database structure
-    Reasoning: The default value for open responce is false when it should be true
 
-2. Allow user to change order of cards in deck from card menu
+1. Allow user to change order of cards in deck from card menu
     Reasoning: Provides the user the ability to study the cards in the order they choose 
 
-3. Add feature that resets id increments of both decks and cards back to 0 when last deck is deleted and resets the id increment of cards back to 0 when the last card is deleted.
+2. 
 
-4. Add comments to help other understand code
+3. Create button in study page that allows user to redo a flash card instead of only being able to reshuffle or having to move to the next or previous card to reset.
+
+4. Add feature that resets id increments of both decks and cards back to 0 when last deck is deleted and resets the id increment of cards back to 0 when the last card is deleted.
+
+5. Add comments to help other understand code
     Reasoning: To make the code more understandable to others and myself if I ever take a long break
 
-5. Change cursor executions to become more protected from SQL injection by writting them in a more secure way.
+6. Change cursor executions to become more protected from SQL injection by writting them in a more secure way.
