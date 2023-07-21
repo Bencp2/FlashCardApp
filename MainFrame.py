@@ -1,6 +1,6 @@
 from tkinter import *
 from FrameApp import FrameApp
-
+import window as w
 class MainFrame(Frame):
 
 
@@ -11,25 +11,39 @@ class MainFrame(Frame):
 
     def __init__(self, parent):
         Frame.__init__(self, parent.fget(), bg =  '#4A7A8C')
+        
         self.canvas = Canvas(self, highlightthickness= 0, bg = '#4A7A8C')
         self.addFrame = FrameApp(property(lambda: self.canvas))
         self.addFrame.config( bg = '#4A7A8C')
-        self.scroll = Scrollbar(self)
-        self.scroll.config(command= self.canvas.yview, orient= VERTICAL)
+        self.scrollY = Scrollbar(self)
+        self.scrollY.config(command= self.canvas.yview, orient= VERTICAL)
+
+        self.scrollX = Scrollbar(self)
+        self.scrollX.config(command = self.canvas.xview, orient = HORIZONTAL)
         # scrollBar.scroll.pack(side = tk.RIGHT, fill = tk.Y, expand = tk.FALSE)
         # scrollBar.canvas.pack( expand = tk.TRUE, anchor= tk.N, fill = tk.BOTH) 
-        
-        self.addFrame.bind("<Configure>", lambda e: self.canvas.config(scrollregion= self.canvas.bbox("all")))
-        
-        self.canvas.create_window((0,0), anchor = NW, window= self.addFrame, width = 1500) 
-        # self.addFrame.grid_columnconfigure(0, weight = 1)
-        self.canvas.config(yscrollcommand = self.scroll.set, yscrollincrement= 10)
-        self.canvas.pack(side = LEFT, expand = TRUE, anchor= N, fill = BOTH) 
-        self.scroll.pack(side = RIGHT, fill = Y, expand = FALSE)
-        # self.createWin()
+        self.addFrame_id = self.canvas.create_window((0,0), anchor = NW, window= self.addFrame, width = w.window().winfo_screenwidth()) 
+        self.canvas.bind("<Configure>", lambda event: self.on_configure(event))
+        self.addFrame.bind("<Configure>", lambda event: self.canvas.config(scrollregion= self.canvas.bbox("all")))
+        self.canvas.config(yscrollcommand = self.scrollY.set, yscrollincrement= 10)
+        self.canvas.pack(side = LEFT, expand = TRUE, fill = BOTH)
 
-    def createWin(self):
-        pass
+        self.scrollY.pack(side = LEFT ,fill = Y, expand = FALSE)
+
+    def on_configure(self, event):
+
+        width = int(w.window().winfo_geometry().split("x")[0])
+        self.canvas.config(width = width - self.scrollY.winfo_reqwidth())
+        self.canvas.itemconfig(self.addFrame_id, width = width)
+        
+        # xCord = int(w.window().winfo_geometry().split("x")[0])
+        # print(xCord)
+        # self.addFrame.configure(scrollregion= self.canvas.bbox("all"), width= int(xCord / 2))
+    # w = event.widget        
+    #     bbox = x, y, width, height = 0, 0, w.winfo_width(), w.winfo_height()
+    #     self.configure(scrollregion=bbox, width=width)
+
+
         # win = w.window()
         # scrollBar.canvas = tk.Canvas(win, highlightthickness= 0, bg = '#4A7A8C')
         # scrollBar.mainFrame = tk.Frame(scrollBar.canvas, bg = '#4A7A8C')

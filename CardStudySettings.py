@@ -36,7 +36,7 @@ class CSS:
 
         CSS.selectionFrame = FrameApp(property(lambda: CSS.mainFrame))
         CSS.selectionFrame.config(background =  '#54a6c4')
-        CSS.selectionFrame.pack(padx = 50, pady = 50, anchor = E)
+        CSS.selectionFrame.pack(pady = 50)
 
         CSS.createOptionsFrame()
 
