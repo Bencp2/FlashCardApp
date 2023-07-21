@@ -10,10 +10,11 @@ To start the application, run the file named "Main.py".
 
 Priority descending
 
-1. Allow user to change order of cards in deck from card menu
+1. Add card text editing features such as color, underline, bold, and undo.
+
+2. Allow user to change order of cards in deck from card menu
     Reasoning: Provides the user the ability to study the cards in the order they choose 
 
-2. 
 
 3. Create button in study page that allows user to redo a flash card instead of only being able to reshuffle or having to move to the next or previous card to reset.
 
