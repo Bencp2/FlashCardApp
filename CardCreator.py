@@ -107,7 +107,6 @@ class CardCreator:
             subButton = Button(CardCreator.selectionFrame ,text= "Change", width=10, height=2, font= "Arial 15", bg = '#C3C7C7', command = lambda: CardCreator.inputResponce(frontInput, backInput))
         subButton.pack(side = RIGHT, padx = 20, pady = 10)        
         
-
         # index = frontInput.index("insert-1c")
         # print(index)
         # if "underline_tag" in frontInput.tag_names(index):
@@ -160,6 +159,15 @@ class CardCreator:
         if textBox.focus_get():
             if textBox.tag_ranges("sel"):
                 s0, s1 = (textBox.index("sel.first"), textBox.index("sel.last"))
+                if "underline_tag" in textBox.tag_names(s0):
+                    button.config(bg = '#f0f0f0')
+                    CardCreator.underlined[not CardCreator.isFrontFocused] = False
+                    textBox.tag_remove("underline_tag", index1 = s0, index2 = s1)
+                else:
+                    button.config(bg = '#ABBCFF')
+                    CardCreator.underlined[not CardCreator.isFrontFocused] = True
+                    textBox.tag_add("underline_tag", s0, s1)
+
             else:
                 index = textBox.index("insert-1c")
                 if "underline_tag" in textBox.tag_names(index):
