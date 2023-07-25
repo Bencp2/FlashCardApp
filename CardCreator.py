@@ -17,6 +17,13 @@ class CardCreator:
     optionsFrame = None 
     selectionFrame = None
 
+    underlined = [False, False]
+    bolded = [False, False]
+    colored = [False, False]
+
+    isFrontFocused = False
+    frontInputTags = None
+    backInputTags = None
     currentCard = None
     createBool = None
 
@@ -44,11 +51,18 @@ class CardCreator:
         inputFrameGrid = FrameApp(property(lambda: CardCreator.selectionFrame))
         inputFrameGrid.pack(padx = 10, pady = 20)
 
+
+        
+        frontEditOptionsFrame = FrameApp(property(lambda: inputFrameGrid))
+
         frontLabel = Label(inputFrameGrid,  text = "Front", font= "Arial 20 bold", width = 20)
-        frontLabel.grid(row = 0, column = 0, pady = 10)
+        frontLabel.grid(row = 0, column = 1, pady = 10)
 
         frontBox = FrameApp(property(lambda: inputFrameGrid))
         frontInput = Text(frontBox, height = 10, width =50, wrap= WORD, font = 'Arial')
+        CardCreator.createEditingOptions(frontEditOptionsFrame, frontInput)
+        frontEditOptionsFrame.grid(row = 0, column = 0)
+
         if not CardCreator.createBool:
             frontInput.insert(END, CardCreator.currentCard[2])
         frontInput.pack(side = LEFT)
@@ -57,15 +71,18 @@ class CardCreator:
 
         frontScroll.config(command= frontInput.yview, orient= VERTICAL)
         frontScroll.pack(side = RIGHT, fill = Y, expand = FALSE)
-        frontBox.grid(row = 1, column = 0, padx = 10)
-
-
+        frontBox.grid(row = 1, column = 0, columnspan= 2, padx = 10)
+        
+        backEditOptionsFrame = FrameApp(property(lambda: inputFrameGrid))
 
         backLabel = Label(inputFrameGrid,  text = "Back", font= "Arial 20 bold", width = 20)
-        backLabel.grid(row = 0, column = 1, pady = 10)
+        backLabel.grid(row = 0, column = 3, pady = 10)
         
         backBox = Frame(master=inputFrameGrid)
         backInput = Text(master= backBox, height =  10, width = 50, wrap= WORD, font = 'Arial')
+        CardCreator.createEditingOptions(backEditOptionsFrame, backInput)
+        backEditOptionsFrame.grid(row = 0, column = 2)
+
         if not CardCreator.createBool:
             backInput.insert(END, CardCreator.currentCard[3])
 
@@ -74,14 +91,90 @@ class CardCreator:
         backInput.config(yscrollcommand= backScroll.set)
         backScroll.config(command= backInput.yview, orient= VERTICAL)
         backScroll.pack(side = RIGHT, fill = Y, expand = FALSE)
+        
+        backBox.grid(row = 1, column = 2, columnspan= 2, padx = 10)
 
-        backBox.grid(row = 1, column = 1, padx = 10)
+        frontInput.bind("<FocusIn>", lambda event: CardCreator.changeFocus(frontEditOptionsFrame, backEditOptionsFrame, True))
+        backInput.bind("<FocusIn>", lambda event: CardCreator.changeFocus(backEditOptionsFrame, frontEditOptionsFrame, False))
+        
+        frontInput.bind("<<Modified>>",  CardCreator.alterText)
+        backInput.bind("<<Modified>>", CardCreator.alterText)
+
 
         if CardCreator.createBool:
             subButton = Button(CardCreator.selectionFrame ,text= "Create", width=10, height=2, font= "Arial 15", bg = '#C3C7C7', command = lambda: CardCreator.inputResponce(frontInput, backInput))
         else:
             subButton = Button(CardCreator.selectionFrame ,text= "Change", width=10, height=2, font= "Arial 15", bg = '#C3C7C7', command = lambda: CardCreator.inputResponce(frontInput, backInput))
         subButton.pack(side = RIGHT, padx = 20, pady = 10)        
+        
+
+        # index = frontInput.index("insert-1c")
+        # print(index)
+        # if "underline_tag" in frontInput.tag_names(index):
+            # frontInput.tag_remove("underline_tag", index1 = index, index2 = index)
+
+    def changeFocus(focusedFrame, unfocusedFrame, frontFocus):
+
+        CardCreator.isFrontFocused = frontFocus
+        
+        for child in focusedFrame.winfo_children():
+            child.config(state = NORMAL)
+            
+
+        for child in unfocusedFrame.winfo_children():
+            child.config(state = DISABLED)
+
+    def createEditingOptions(editingFrame, textBox):
+        
+        buttonList = list()
+
+        textBox.tag_config("underline_tag", underline = True)
+        buttonList.append(Button(editingFrame, relief= FLAT, text = "U", font = "Arial 12 underline", state = DISABLED))
+        buttonList[0].config(command = lambda: CardCreator.underlineText(buttonList[0], textBox))        
+        buttonList[0].grid(row = 0, column = 0)
+        
+        textBox.bind("<ButtonRelease-1>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+        textBox.bind("<KeyRelease-Up>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+        textBox.bind("<KeyRelease-Down>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+        textBox.bind("<KeyRelease-Left>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+        textBox.bind("<KeyRelease-Right>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+
+    def evaluateIndex(textBox, buttonList):
+        index = textBox.index("insert-1c")
+        # for tag in textBox.tag_names(index):
+        if "underline_tag" in textBox.tag_names(index) and buttonList[0].cget("bg") != '#ABBCFF':
+            buttonList[0].config(bg = '#ABBCFF')
+            CardCreator.underlined[not CardCreator.isFrontFocused] = True
+        if not "underline_tag" in textBox.tag_names(index) and buttonList[0].cget("bg") != '#f0f0f0':
+            buttonList[0].config(bg =  '#f0f0f0')       
+            CardCreator.underlined[not CardCreator.isFrontFocused] = False
+
+    def alterText(event):
+        event.widget.edit_modified(False)
+        if CardCreator.underlined[not CardCreator.isFrontFocused]:
+            event.widget.tag_add("underline_tag", index1 = event.widget.index("insert-1c"))
+        else:
+            event.widget.tag_remove("underline_tag", index1 = event.widget.index("insert-1c"), index2 = event.widget.index("insert"))  
+
+    def underlineText(button, textBox):
+        if textBox.focus_get():
+            if textBox.tag_ranges("sel"):
+                s0, s1 = (textBox.index("sel.first"), textBox.index("sel.last"))
+            else:
+                index = textBox.index("insert-1c")
+                if "underline_tag" in textBox.tag_names(index):
+                    button.config(bg = '#f0f0f0')
+                    # textBox.tag_remove("underline_tag", index1 = index, index2 = index)
+                    CardCreator.underlined[not CardCreator.isFrontFocused] = False
+                else:
+                    button.config(bg = '#ABBCFF')
+                    CardCreator.underlined[not CardCreator.isFrontFocused] = True
+                    
+
+                    # textBox.tag_add("underline_tag", index1 = index)
+                    
+                    
+
 
     @staticmethod
     def createOptionsFrame():
