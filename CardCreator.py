@@ -6,6 +6,7 @@ import TitleLabel as tl
 from FrameApp import FrameApp
 import cardMenu as cm
 from CurrentDeck import CDeck
+from idlelib.redirector import WidgetRedirector
 
 
 class CardCreator:
@@ -21,6 +22,8 @@ class CardCreator:
     bolded = [False, False]
     colored = [False, False]
 
+    isFoward = False
+    isDelete = False
     isFrontFocused = False
     frontInputTags = None
     backInputTags = None
@@ -99,7 +102,7 @@ class CardCreator:
         
         frontInput.bind("<<Modified>>",  CardCreator.alterText)
         backInput.bind("<<Modified>>", CardCreator.alterText)
-
+        
 
         if CardCreator.createBool:
             subButton = Button(CardCreator.selectionFrame ,text= "Create", width=10, height=2, font= "Arial 15", bg = '#C3C7C7', command = lambda: CardCreator.inputResponce(frontInput, backInput))
@@ -121,26 +124,87 @@ class CardCreator:
             
 
         for child in unfocusedFrame.winfo_children():
-            child.config(state = DISABLED)
+            child.config(bg = '#f0f0f0', state = DISABLED)
+
 
     def createEditingOptions(editingFrame, textBox):
         
+        def do_nothing(event):
+            return "break"
+
         buttonList = list()
+        textBox.bind("<Control-t>", do_nothing)
 
         textBox.tag_config("underline_tag", underline = True)
         buttonList.append(Button(editingFrame, relief= FLAT, text = "U", font = "Arial 12 underline", state = DISABLED))
         buttonList[0].config(command = lambda: CardCreator.underlineText(buttonList[0], textBox))        
         buttonList[0].grid(row = 0, column = 0)
+        redirector = WidgetRedirector(textBox)
         
-        textBox.bind("<ButtonRelease-1>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
-        textBox.bind("<KeyRelease-Up>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
-        textBox.bind("<KeyRelease-Down>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
-        textBox.bind("<KeyRelease-Left>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
-        textBox.bind("<KeyRelease-Right>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
 
-    def evaluateIndex(textBox, buttonList):
-        index = textBox.index("insert-1c")
+        def on_mark(*args):
+            hasIndex = True
+
+            if len(args) > 2:
+                if "+1" in args[2]:
+                    index = textBox.index("insert")
+                elif "-1" in args[2]:
+                    index = textBox.index("insert-2c")
+                elif args[2][0].isdigit():
+                    index = textBox.index(args[2] + "-1c")
+                else:
+                    print(*args, "GREATER THAN 2")
+                    hasIndex = False
+            else:
+                print(*args, "2 OR LESS")
+                index = textBox.index("insert-1c")
+            if hasIndex:
+                CardCreator.evaluateIndex(textBox, buttonList, index)
+            return original_mark(*args)
+        def on_delete(*args):
+            print(args, "DELETE")
+            if "-1" in args[0]:
+                index = textBox.index("insert-2c")
+            else:
+                index = textBox.index("insert-1c")
+            CardCreator.isDelete = True
+            CardCreator.evaluateIndex(textBox, buttonList, index)
+            return original_delete(*args)
+        
+        original_mark = redirector.register("mark", on_mark )
+        original_delete = redirector.register("delete", on_delete)
+        # original_right = redirector.register("right", on_right)
+
+        # textBox.bind("<Select>", lambda event: CardCreator.evaluateIndex(event, buttonList))
+
+        # textBox.bind("<cursor>",lambda event: CardCreator.evaluateIndex(event, buttonList))
+
+        # textBox.bind("<KeyRelease-Down>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+        # textBox.bind("<Down>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+
+        # textBox.bind("<KeyRelease-Left>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+        # textBox.bind("<KeyPress-Left>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+
+        # textBox.bind("<Left>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+
+        # textBox.bind("<KeyRelease-Right>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+        # textBox.bind("<KeyPress-Right>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+
+        # textBox.bind("<Right>", lambda event: CardCreator.evaluateIndex(textBox, buttonList))
+
+        # textBox.bind("<BackSpace>", lambda event: CardCreator.activateBackSpace(textBox, buttonList))
+
+
+    def evaluateIndex(textBox, buttonList, index):
+        # if CardCreator.isDelete:
+        #     index = textBox.index("insert-2c")
+        # else:
+        #     print("INDEED")
+        #     index = textBox.index("insert-1c")
+            # print(textBox.get(index1 = index), "BEFORE")
+
         # for tag in textBox.tag_names(index):
+        # print(textBox.get(index1 = index))
         if "underline_tag" in textBox.tag_names(index) and buttonList[0].cget("bg") != '#ABBCFF':
             buttonList[0].config(bg = '#ABBCFF')
             CardCreator.underlined[not CardCreator.isFrontFocused] = True
@@ -148,12 +212,21 @@ class CardCreator:
             buttonList[0].config(bg =  '#f0f0f0')       
             CardCreator.underlined[not CardCreator.isFrontFocused] = False
 
+    # def activateBackSpace(textBox, buttonList):
+    #     CardCreator.isDelete = True
+    #     CardCreator.evaluateIndex(textBox, buttonList)   
+
+
     def alterText(event):
+
         event.widget.edit_modified(False)
-        if CardCreator.underlined[not CardCreator.isFrontFocused]:
-            event.widget.tag_add("underline_tag", index1 = event.widget.index("insert-1c"))
+        if CardCreator.isDelete:
+            CardCreator.isDelete = False 
         else:
-            event.widget.tag_remove("underline_tag", index1 = event.widget.index("insert-1c"), index2 = event.widget.index("insert"))  
+            if CardCreator.underlined[not CardCreator.isFrontFocused]:
+                event.widget.tag_add("underline_tag", index1 = event.widget.index("insert-1c"))
+            else:
+                event.widget.tag_remove("underline_tag", index1 = event.widget.index("insert-1c"), index2 = event.widget.index("insert"))  
 
     def underlineText(button, textBox):
         if textBox.focus_get():
