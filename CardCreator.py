@@ -22,17 +22,24 @@ class CardCreator:
     bolded = [False, False]
     colored = [False, False]
 
+    total_frontTag_ids = 0
     frontTag_undo_stack = []
     frontTag_redo_stack = []
 
     isModified = False
     num_appended = 0
+
+
+    total_backTag_ids = 0
+
     backTag_undo_stack = []
     backTag_redo_stack = []
 
+    isInsert = False
     current_insert = []
     isFoward = False
     isDelete = False
+    isNotUndoRedoDelete = False
     isUndo = False
     isPaste = False
     isFrontFocused = False
@@ -111,8 +118,8 @@ class CardCreator:
         frontInput.bind("<FocusIn>", lambda event: CardCreator.changeFocus(frontEditOptionsFrame, backEditOptionsFrame, True))
         backInput.bind("<FocusIn>", lambda event: CardCreator.changeFocus(backEditOptionsFrame, frontEditOptionsFrame, False))
         
-        frontInput.bind("<<Modified>>", lambda event: CardCreator.alterText(frontInput))
-        backInput.bind("<<Modified>>", lambda event: CardCreator.alterText(backInput))
+        frontInput.bind("<<Modified>>", lambda event: CardCreator.updateDeleteAndAlterText(frontInput))
+        backInput.bind("<<Modified>>", lambda event: CardCreator.updateDeleteAndAlterText(backInput))
 
         if CardCreator.createBool:
             subButton = Button(CardCreator.selectionFrame ,text= "Create", width=10, height=2, font= "Arial 15", bg = '#C3C7C7', command = lambda: CardCreator.inputResponce(frontInput, backInput))
@@ -124,6 +131,12 @@ class CardCreator:
         # print(index)
         # if "underline_tag" in frontInput.tag_names(index):
             # frontInput.tag_remove("underline_tag", index1 = index, index2 = index)
+    def updateDeleteAndAlterText(textBox):
+        if CardCreator.isDelete and CardCreator.isInsert:
+            CardCreator.isDelete = False
+            CardCreator.isInsert = False
+        # print("DELETE:", CardCreator.isDelete, "INSERT:", CardCreator.isInsert)
+        CardCreator.alterText(textBox)
 
     def changeFocus(focusedFrame, unfocusedFrame, frontFocus):
 
@@ -192,13 +205,20 @@ class CardCreator:
             if CardCreator.isUndo and args[0][0].isdigit():
                 index = textBox.index("insert-1c")
                 arg_index = args[0]
+
                 if textBox.index(arg_index + "+1c") == args[1]:
                     if CardCreator.isFrontFocused:
-                        CardCreator.frontTag_redo_stack.append(CardCreator.frontTag_undo_stack.pop())
+                        popped_action = CardCreator.frontTag_undo_stack.pop()
+                        CardCreator.frontTag_redo_stack.append(popped_action)
+                        
                     else:
-                        CardCreator.backTag_redo_stack.append(CardCreator.backTag_undo_stack.pop())
-                else:
+                        popped_action = CardCreator.frontTag_undo_stack.pop()
+                        CardCreator.backTag_redo_stack.append(popped_action)
 
+                    CardCreator.num_appended += 1
+
+                else:
+                    
                     while textBox.index(arg_index) != args[1]:
                         print(arg_index, args[1])
                         if CardCreator.isFrontFocused:
@@ -206,15 +226,18 @@ class CardCreator:
                         else:
                             CardCreator.backTag_redo_stack.append(CardCreator.backTag_undo_stack.pop())
                         arg_index = textBox.index(arg_index + "+1c")
+                        CardCreator.num_appended += 1
 
             elif not CardCreator.isUndo and args[0][0].isdigit():
                 index = textBox.index("insert-1c")
                 arg_index = args[0]
+
                 if textBox.index(arg_index + "+1c") == args[1]:
                     if CardCreator.isFrontFocused:
                         CardCreator.frontTag_undo_stack.append(CardCreator.frontTag_redo_stack.pop())
                     else:
                         CardCreator.backTag_undo_stack.append(CardCreator.backTag_redo_stack.pop())
+                    CardCreator.num_appended += 1
                 else:
                     while textBox.index(arg_index) != args[1]:
                         if CardCreator.isFrontFocused:
@@ -222,8 +245,9 @@ class CardCreator:
                         else:
                             CardCreator.backTag_undo_stack.append(CardCreator.backTag_redo_stack.pop())
                         arg_index = textBox.index(arg_index + "+1c")
-
+                        CardCreator.num_appended += 1
             else:
+                CardCreator.isNotUndoRedoDelete = True
                 if CardCreator.isFrontFocused:
                     CardCreator.frontTag_redo_stack = []
                 else:
@@ -248,58 +272,61 @@ class CardCreator:
 
                 if "-1" in args[0]:
                     index = textBox.index("insert-2c")              
-
                     if CardCreator.isFrontFocused:
-                        CardCreator.frontTag_undo_stack.append([textBox.index(args[0]), textBox.tag_names(args[0])])
+                        CardCreator.frontTag_undo_stack.append([textBox.index(args[0]), textBox.tag_names(args[0]), textBox.index(args[0]), None])
                     else:
-                        CardCreator.backTag_undo_stack.append([textBox.index(args[0]), textBox.tag_names(args[0])])
-
+                        CardCreator.backTag_undo_stack.append([textBox.index(args[0]), textBox.tag_names(args[0]), textBox.index(args[0]), None])
+                    CardCreator.num_appended = 1
                 else:
                     isSelect = False
                     index = textBox.index("insert-1c")
                     if ("insert" == args[0] or args[0] == "sel.first") and len(args) == 2: 
                         if args[0] == "sel.first":
                             isSelect = True
-                        # print(END, textBox.index(END))
-                        # if args[0] == "sel.first" and textBox.index(textBox.index(args[len(args) - 2]) + "+1c")  == textBox.index(args[len(args) - 1]) and textBox.get(index1 = textBox.index(args[len(args) - 2]), index2 = textBox.index(args[len(args) - 1])) == '\n':
-                        #     if textBox.index(args[len(args) - 1]) == textBox.index(END):
-                        #       validIndex = False  
-                        # if validIndex:
-                            # print(textBox.get(index1 = textBox.index(args[len(args) - 2]), index2 = textBox.index(args[len(args) - 1])))
                         s0 = textBox.index(args[len(args) - 2])
-                        # print(s0)
-                        # print(textBox.index(args[len(args) - 1]))
+
                         while textBox.index(s0) != textBox.index(args[len(args) - 1]):
                             if isSelect and textBox.index(s0 + " +1c") == textBox.index(args[len(args) - 1]) and textBox.get(index1 = textBox.index(s0), index2 = textBox.index(args[len(args) - 1])) == '\n':
                                 if textBox.index(s0 + " +1c") == textBox.index(END):
                                     break
                             else:
                                 if CardCreator.isFrontFocused:
-                                    CardCreator.frontTag_undo_stack.append([textBox.index(s0), textBox.tag_names(s0)])
+                                    CardCreator.frontTag_undo_stack.append([s0, textBox.tag_names(s0), s0, None])
                                 else:
-                                    CardCreator.backTag_undo_stack.append([textBox.index(s0), textBox.tag_names(s0)])
+                                    CardCreator.backTag_undo_stack.append([s0, textBox.tag_names(s0), s0, None])
                             s0 = textBox.index(s0 + " +1c")
+                            CardCreator.num_appended += 1
+
                     else:
                         if CardCreator.isFrontFocused:
-                            CardCreator.frontTag_undo_stack.append([textBox.index(args[0]), textBox.tag_names(args[0])])
+                            CardCreator.frontTag_undo_stack.append([textBox.index(args[0]), textBox.tag_names(args[0]), textBox.index(args[0]), None])
                         else:
-                            CardCreator.backTag_undo_stack.append([textBox.index(args[0]), textBox.tag_names(args[0])])
+                            CardCreator.backTag_undo_stack.append([textBox.index(args[0]), textBox.tag_names(args[0]), textBox.index(args[0]), None])
+                        CardCreator.num_appended = 1
 
 
             CardCreator.evaluateIndex(textBox, buttonList, index)
             CardCreator.isDelete = True
-
-            return original_delete(*args)
+            original_delete(*args)
+            # CardCreator.updateStacks(textBox)
         
         def on_insert(*args):
             print(args, "INSERT")
+            if CardCreator.isDelete and CardCreator.num_appended > 0:
+                CardCreator.updateStacks(textBox)
+            CardCreator.isInsert = True
             if CardCreator.isUndo and args[0][0].isdigit():
                     s0 = args[0]
                     for arg_index in range(0, len(args[1])):
                         if CardCreator.isFrontFocused:
-                            CardCreator.frontTag_redo_stack.append(CardCreator.frontTag_undo_stack.pop())
+                            popped_action = CardCreator.frontTag_undo_stack.pop()
+                            popped_action[2] = popped_action[0]
+                            CardCreator.frontTag_redo_stack.append(popped_action)
+                            
                         else:
-                            CardCreator.backTag_redo_stack.append(CardCreator.backTag_undo_stack.pop())
+                            popped_action = CardCreator.backTag_undo_stack.pop()
+                            popped_action[2] = popped_action[0]
+                            CardCreator.backTag_redo_stack.append(popped_action)
                         CardCreator.num_appended += 1
 
                         s0 = textBox.index(s0 + "+1c")                        
@@ -307,11 +334,16 @@ class CardCreator:
                     s0 = args[0]
                     for arg_index in range(0, len(args[1])):
                         if CardCreator.isFrontFocused:
-                            CardCreator.frontTag_undo_stack.append(CardCreator.frontTag_redo_stack.pop())
+                            popped_action = CardCreator.frontTag_redo_stack.pop()
+                            popped_action[2] = popped_action[0]
+                            CardCreator.frontTag_undo_stack.append(popped_action)
                         else:
+                            popped_action = CardCreator.backTag_redo_stack.pop()
+                            popped_action[2] = popped_action[0]
                             CardCreator.backTag_undo_stack.append(CardCreator.backTag_redo_stack.pop())
                         CardCreator.num_appended += 1
-                        s0 = textBox.index(s0 + "+1c")  
+                        s0 = textBox.index(s0 + "+1c")
+                          
             else:
                 if CardCreator.isFrontFocused:
                     CardCreator.frontTag_redo_stack.clear()
@@ -388,7 +420,6 @@ class CardCreator:
     #     CardCreator.isDelete = True
     #     CardCreator.evaluateIndex(textBox, buttonList)   
     
-
     # Insert
     # Text: 123456789
     # undoList = [ ["1.0", tags], ["1.1", tags], ... , ["1.8", tags] ]
@@ -457,7 +488,6 @@ class CardCreator:
         if CardCreator.isModified:
             print("UNDO STACK" ,CardCreator.frontTag_undo_stack)
             print("REDO STACK", CardCreator.frontTag_redo_stack)
-            print("HERE")
         # if CardCreator.num_redo > 0:
         #     for c in range(0, CardCreator.num_redo):
         #         if CardCreator.isFrontFocused:
@@ -469,46 +499,50 @@ class CardCreator:
         #     CardCreator.num_redo = 0
             print(CardCreator.current_insert)
             print(CardCreator.isDelete)
-            if CardCreator.isDelete and len(CardCreator.current_insert) == 0:
-                CardCreator.isDelete = False
 
+            print("CURRENT", CardCreator.current_insert)
+            if CardCreator.isUndo and len(CardCreator.current_insert) == 0 and not CardCreator.isDelete:
+                for char_num in reversed(range(0, CardCreator.num_appended)):
+                    if CardCreator.isFrontFocused:
+                        for tag in CardCreator.frontTag_redo_stack[len(CardCreator.frontTag_redo_stack) - char_num - 1][1]:
+                                textBox.tag_add(tag, index1 = textBox.index("insert -" + str(char_num + 1) + "c"))
+                    else:
+                        for tag in CardCreator.backTag_redo_stack[len(CardCreator.backTag_redo_stack) - char_num - 1][1]:
+                            textBox.tag_add(tag, index1 = textBox.index("insert -" + str(char_num + 1) + "c"))     
+            elif len(CardCreator.current_insert) == 0 and not CardCreator.isDelete:
+                
+                for char_num in reversed(range(0, CardCreator.num_appended)):
+                    if CardCreator.isFrontFocused:
+                        for tag in CardCreator.frontTag_undo_stack[len(CardCreator.frontTag_undo_stack) - char_num - 1][1]:
+                            textBox.tag_add(tag, index1 = textBox.index("insert -" + str(char_num + 1) + "c"))
+                    else:
+                        for tag in CardCreator.backTag_undo_stack[len(CardCreator.backTag_undo_stack) - char_num - 1][1]:
+                            textBox.tag_add(tag, index1 = textBox.index("insert -" + str(char_num + 1) + "c"))
             else:
-                print("CURRENT", CardCreator.current_insert)
-                if CardCreator.isUndo and len(CardCreator.current_insert) == 0:
-                    for char_num in reversed(range(0, CardCreator.num_appended)):
-                        if CardCreator.isFrontFocused:
-                            for tag in CardCreator.frontTag_redo_stack[len(CardCreator.frontTag_redo_stack) - char_num - 1][1]:
-                                    textBox.tag_add(tag, index1 = textBox.index("insert -" + str(char_num + 1) + "c"))
-                        else:
-                            for tag in CardCreator.backTag_redo_stack[len(CardCreator.backTag_redo_stack) - char_num - 1][1]:
-                                textBox.tag_add(tag, index1 = textBox.index("insert -" + str(char_num + 1) + "c"))     
-                    CardCreator.isUndo = False
-                elif len(CardCreator.current_insert) == 0:
+                if len(CardCreator.current_insert) == 2:
+                    if CardCreator.underlined[not CardCreator.isFrontFocused]:
+                        textBox.tag_add("underline_tag", textBox.index("insert -" + str(CardCreator.current_insert[1] + 1) + "c"), textBox.index("insert"))
+                    else:
+                        textBox.tag_remove("underline_tag", textBox.index("insert -" + str(CardCreator.current_insert[1] + 1) + "c"),  textBox.index("insert"))   
+                    #  event.widget.tag_add(tag, index1 = event.widget.index("insert -" + str(char_num) + "c"))
                     
-                    for char_num in reversed(range(0, CardCreator.num_appended)):
+                    for char_num in reversed(range(0, CardCreator.current_insert[1])):
                         if CardCreator.isFrontFocused:
-                            for tag in CardCreator.frontTag_undo_stack[len(CardCreator.frontTag_undo_stack) - char_num - 1][1]:
-                                textBox.tag_add(tag, index1 = textBox.index("insert -" + str(char_num + 1) + "c"))
+                            CardCreator.frontTag_undo_stack.append([textBox.index("insert -" + str(char_num + 1) + "c"), textBox.tag_names("insert -" + str(char_num + 1) + "c"), textBox.index("insert -" + str(char_num + 1) + "c"), CardCreator.total_frontTag_ids])
+                            CardCreator.total_frontTag_ids += 1
                         else:
-                            for tag in CardCreator.backTag_undo_stack[len(CardCreator.backTag_undo_stack) - char_num - 1][1]:
-                                textBox.tag_add(tag, index1 = textBox.index("insert -" + str(char_num + 1) + "c"))
-                    CardCreator.isRedo = False
-                else:
-                    if len(CardCreator.current_insert) == 2:
-                        if CardCreator.underlined[not CardCreator.isFrontFocused]:
-                            textBox.tag_add("underline_tag", index1 = textBox.index("insert -" + str(CardCreator.current_insert[1] + 1) + "c"), index2 = textBox.index("insert"))
-                        else:
-                            textBox.tag_remove("underline_tag", index1 =textBox.index("insert -" + str(CardCreator.current_insert[1] + 1) + "c"), index2 = textBox.index("insert"))   
-                        #  event.widget.tag_add(tag, index1 = event.widget.index("insert -" + str(char_num) + "c"))
-                        for char_num in reversed(range(0, CardCreator.current_insert[1])):
-                            if CardCreator.isFrontFocused:
-                                CardCreator.frontTag_undo_stack.append([textBox.index("insert -" + str(char_num + 1) + "c"), textBox.tag_names("insert -" + str(char_num + 1) + "c")])
-                            else:
-                                CardCreator.backTag_undo_stack.append([textBox.index("insert -" + str(char_num + 1) + "c"), textBox.tag_names("insert -" + str(char_num+ 1) + "c")])
-                    print("UNDO STACK AFTER" ,CardCreator.frontTag_undo_stack)
-                    print("REDO STACK AFTER", CardCreator.frontTag_redo_stack)
-                    CardCreator.current_insert.clear()
-                CardCreator.num_appended = 0
+                            CardCreator.backTag_undo_stack.append([textBox.index("insert -" + str(char_num + 1) + "c"), textBox.tag_names("insert -" + str(char_num+ 1) + "c"), textBox.index("insert -" + str(char_num + 1) + "c"), CardCreator.total_backTag_ids])
+                            CardCreator.total_backTag_ids += 1
+
+                        CardCreator.num_appended += 1
+                print("UNDO STACK AFTER" ,CardCreator.frontTag_undo_stack)
+                print("REDO STACK AFTER", CardCreator.frontTag_redo_stack)
+            CardCreator.updateStacks(textBox) 
+ 
+ 
+            # CardCreator.current_insert.clear()
+            # CardCreator.num_appended = 0
+            
             CardCreator.isModified = False
         else:
             CardCreator.isModified = True
@@ -517,6 +551,244 @@ class CardCreator:
             #     event.widget.tag_add("underline_tag", index1 = event.widget.index("insert-1c"))
             # else:
             #     event.widget.tag_remove("underline_tag", index1 = event.widget.index("insert-1c"), index2 = event.widget.index("insert"))  
+    def updateStacks(textBox):
+
+
+        def plusOrMinus():
+            if CardCreator.isDelete:
+                return "-"
+            else:
+                return "+"
+
+
+        appendedCounter = CardCreator.num_appended
+        index_list = []
+        if len(CardCreator.current_insert) == 0 and not CardCreator.isNotUndoRedoDelete:
+            
+            if CardCreator.isFrontFocused:
+                iteration1 = CardCreator.frontTag_redo_stack
+                iteration2 = CardCreator.frontTag_undo_stack
+                if CardCreator.isUndo:
+                    id_stack1 = [el[3] for el in CardCreator.frontTag_undo_stack]
+                    id_stack2 = [el[3] for el in CardCreator.frontTag_redo_stack[0: len(iteration1) - CardCreator.num_appended]]
+                else:
+                    id_stack1 = [el[3] for el in CardCreator.frontTag_redo_stack]
+                    id_stack2 = [el[3] for el in CardCreator.frontTag_undo_stack[0: len(iteration2) - CardCreator.num_appended]]
+
+            else:
+                iteration1 = CardCreator.backTag_redo_stack
+                iteration2 = CardCreator.backTag_undo_stack
+                if CardCreator.isUndo:
+                    id_stack1 = [el[3] for el in CardCreator.backTag_undo_stack]
+                    id_stack2 = [el[3] for el in CardCreator.backTag_redo_stack[0: len(iteration1) - CardCreator.num_appended]]
+                    
+                else:
+                    id_stack1 = [el[3] for el in CardCreator.backTag_redo_stack]
+                    id_stack2 = [el[3] for el in CardCreator.backTag_undo_stack[0: len(iteration2) - CardCreator.num_appended]]
+
+                
+            action_count = CardCreator.num_appended
+
+            if CardCreator.isUndo:
+                # action_count = 0
+                print("NUM APPENDED" ,CardCreator.num_appended)
+
+                action_origin = iteration1[len(iteration1) -  CardCreator.num_appended][0]
+                print(len(iteration1) -  CardCreator.num_appended)
+
+                index_list = iteration1[len(iteration1) -  CardCreator.num_appended: len(iteration1)]
+                # print(len(iteration2) -  CardCreator.num_appended - 1, len(iteration2))
+            else:
+                print("NUM APPENDED" ,CardCreator.num_appended)
+                print("ITERATION2", iteration2)
+                action_origin = iteration2[len(iteration2) -  CardCreator.num_appended][0]
+                index_list = iteration2[len(iteration2) -  CardCreator.num_appended: len(iteration2)]
+            current_index_list = [el[2] for el in index_list]
+            print(action_origin)
+            print(index_list)
+            for action in index_list:
+                if CardCreator.isDelete:
+                    print("YES")
+                    if CardCreator.isUndo and CardCreator.isFrontFocused:
+                        print("STACKS 1 and 2" ,id_stack1, id_stack2)
+                        if action[3] in id_stack1:
+                            CardCreator.frontTag_undo_stack[id_stack1.index(action[3])][2], CardCreator.frontTag_redo_stack[len(iteration1) - action_count][2] = None, None
+                        elif action[3] in id_stack2:
+                            print("COUNT",action_count)
+                            CardCreator.frontTag_redo_stack[id_stack2.index(action[3])][2], CardCreator.frontTag_redo_stack[len(iteration1) - action_count][2] = None, None
+                        else:
+                            #  print( "HERE",len(iteration2) - action_count)
+                            #  print(len(iteration2), action_count)
+                             CardCreator.frontTag_redo_stack[len(iteration1) - action_count][2] = None
+                    elif CardCreator.isUndo and not CardCreator.isFrontFocused:
+                        if action[3] in id_stack1:
+                            CardCreator.backTag_undo_stack[id_stack1.index(action[3])][2], CardCreator.backTag_redo_stack[len(iteration1) - action_count][2] = None, None
+                        elif action[3] in id_stack2:
+                            CardCreator.backTag_redo_stack[id_stack2.index(action[3])][2], CardCreator.backTag_redo_stack[len(iteration1) - action_count][2] = None, None 
+                        else:
+                            CardCreator.backTag_redo_stack[len(iteration1) - action_count][2] = None
+                        # CardCreator.backTag_undo_stack[id_stack1.index(action[3])][2], CardCreator.backTag_redo_stack[current_index_list.index(action[2])] = None, None
+                    elif not CardCreator.isUndo and CardCreator.isFrontFocused:
+                        if action[3] in id_stack1:
+                            CardCreator.frontTag_redo_stack[id_stack1.index(action[3])][2], CardCreator.frontTag_undo_stack[len(iteration2) - action_count][2] = None, None
+                        elif action[3] in id_stack2:
+                            CardCreator.frontTag_undo_stack[id_stack2.index(action[3])][2], CardCreator.frontTag_undo_stack[len(iteration2) - action_count][2] = None, None
+                        else:
+                            CardCreator.frontTag_undo_stack[len(iteration2) - action_count][2] = None
+                    else:
+                        if action[3] in id_stack1:
+                            CardCreator.backTag_redo_stack[id_stack1.index(action[3])][2], CardCreator.backTag_undo_stack[len(iteration2) - action_count][2] = None, None
+                        elif action[3] in id_stack2:
+                            CardCreator.backTag_undo_stack[id_stack2.index(action[3])][2], CardCreator.backTag_undo_stack[len(iteration2) - action_count][2] = None, None
+                        else:
+                            CardCreator.backTag_undo_stack[len(iteration2) - action_count][2] = None
+                        # CardCreator.backTag_redo_stack[id_stack1.index(action[3])][2] = None
+                # elif  CardCreator.isDelete:
+                #     if CardCreator.isUndo and CardCreator.isFrontFocused:
+                #         CardCreator.frontTag_undo_stack[id_stack1.index(action[3])][2] = None
+                #     elif CardCreator.isUndo and not CardCreator.isFrontFocused:
+                #         CardCreator.backTag_undo_stack[id_stack1.index(action[3])][2] = None
+                #     elif not CardCreator.isUndo and CardCreator.isFrontFocused:
+                #         CardCreator.frontTag_redo_stack[id_stack1.index(action[3])][2] = None
+                #     else:
+                #         CardCreator.backTag_redo_stack[id_stack1.index(action[3])][2] = None
+
+                else:
+                    if CardCreator.isUndo and CardCreator.isFrontFocused:
+                        if action[3] in id_stack1:
+                            print(CardCreator.frontTag_redo_stack)
+                            CardCreator.frontTag_undo_stack[id_stack1.index(action[3])][2], CardCreator.frontTag_redo_stack[len(iteration1)- action_count][2] = action[0], action[0]
+                        elif action[3] in id_stack2:
+                            CardCreator.frontTag_redo_stack[id_stack2.index(action[3])][2], CardCreator.frontTag_redo_stack[len(iteration1)- action_count][2] = action[0], action[0]
+                        else:
+                            CardCreator.frontTag_redo_stack[len(iteration1) - action_count][2] = action[0]
+                        # CardCreator.frontTag_undo_stack[id_stack.index(action[3])][2] = CardCreator.frontTag_redo_stack[action_count][2]
+                    elif CardCreator.isUndo and not CardCreator.isFrontFocused:
+                        if action[3] in id_stack1:
+                            CardCreator.backTag_undo_stack[id_stack1.index(action[3])][2], CardCreator.backTag_redo_stack[len(iteration1)- action_count][2] = action[0], action[0]
+                        elif action[3] in id_stack2:
+                            CardCreator.backTag_redo_stack[id_stack2.index(action[3])][2], CardCreator.backTag_redo_stack[len(iteration1)- action_count][2] = action[0], action[0]
+                        else:
+                            CardCreator.backTag_redo_stack[len(iteration1) - action_count][2] = action[0]
+                        # CardCreator.backTag_undo_stack[id_stack.index(action[3])][2] = CardCreator.backTag_redo_stack[action_count][2]
+                    elif not CardCreator.isUndo and CardCreator.isFrontFocused:
+                        if action[3] in id_stack1:
+                            CardCreator.frontTag_redo_stack[id_stack1.index(action[3])][2], CardCreator.frontTag_undo_stack[len(iteration2) - action_count][2] = action[0], action[0]
+                        elif action[3] in id_stack2:
+                            CardCreator.frontTag_undo_stack[id_stack2.index(action[3])][2], CardCreator.frontTag_undo_stack[len(iteration2) - action_count][2] = action[0], action[0]
+                        else:
+                            CardCreator.frontTag_undo_stack[len(iteration2) - action_count][2] = action[0]
+                        # CardCreator.frontTag_redo_stack[id_stack.index(action[3])][2] = CardCreator.frontTag_undo_stack[len(iteration2) -  action_count - 1][2]
+                    else:
+                        if action[3] in id_stack1:
+                            CardCreator.backTag_redo_stack[id_stack1.index(action[3])][2], CardCreator.backTag_undo_stack[len(iteration2) - action_count][2] = action[0], action[0]
+                        elif action[3] in id_stack2:
+                            CardCreator.backTag_undo_stack[id_stack2.index(action[3])][2], CardCreator.backTag_undo_stack[len(iteration2) - action_count][2] = action[0], action[0]
+                        else:
+                            CardCreator.backTag_undo_stack[len(iteration2) - action_count][2] = action[0]
+                        # CardCreator.backTag_redo_stack[id_stack.index(action[3])][2] = CardCreator.backTag_undo_stack[len(iteration2) -  action_count - 1][2]
+                action_count -= 1
+
+            current_id_stack = [el[3] for el in index_list]
+            action_count = 0
+            for action in iteration1:
+                if not action[3] in current_id_stack and action[2] != None and float(action[2]) >= float(action_origin):
+                    if CardCreator.isFrontFocused:
+                        CardCreator.frontTag_redo_stack[action_count][2] = textBox.index(CardCreator.frontTag_redo_stack[action_count][2] + plusOrMinus() + str(CardCreator.num_appended) + "c")
+                    else:
+                        CardCreator.backTag_redo_stack[action_count][2] = textBox.index(CardCreator.backTag_redo_stack[action_count][2] + plusOrMinus() + str(CardCreator.num_appended) + "c")
+
+                action_count += 1
+
+            action_count = 0
+            print(iteration2)
+
+            for action in iteration2:
+                if not action[3] in current_id_stack and action[2] != None and float(action[2]) >= float(action_origin):
+                    if CardCreator.isFrontFocused:
+                        CardCreator.frontTag_undo_stack[action_count][2] = textBox.index(CardCreator.frontTag_undo_stack[action_count][2] + plusOrMinus() + str(CardCreator.num_appended) + "c")
+                    else:
+                        CardCreator.backTag_undo_stack[action_count][2] = textBox.index(CardCreator.backTag_undo_stack[action_count][2] + plusOrMinus() + str(CardCreator.num_appended) + "c")
+                action_count += 1            
+
+
+
+        # elif len(CardCreator.current_insert) == 0 and not CardCreator.isNotUndoRedoDelete: 
+        #     action_count = 0
+        #     if CardCreator.isFrontFocused:
+        #         iteration = CardCreator.frontTag_redo_stack
+        #     else:
+        #         iteration = CardCreator.backTag_redo_stack
+        #     for action in iteration:
+        #         if action_count < CardCreator.num_appended:
+        #             if appendedCounter >= 1:
+        #                 if appendedCounter == 1:
+        #                     if CardCreator.isFrontFocused:
+        #                         action_origin = CardCreator.frontTag_redo_stack[action_count][0]
+        #                     else:
+        #                         action_origin = CardCreator.backTag_redo_stack[action_count][0]
+
+        #                 if CardCreator.isDelete:
+        #                     if CardCreator.isFrontFocused:
+        #                         CardCreator.frontTag_redo_stack[action_count][2] = None
+                                
+        #                     else:
+        #                         CardCreator.backTag_redo_stack[action_count][2] = None
+        #                 else:
+        #                     if CardCreator.isFrontFocused:
+        #                         CardCreator.frontTag_redo_stack[action_count][2] = CardCreator.frontTag_redo_stack[action_count][0]
+        #                     else:
+        #                         CardCreator.backTag_redo_stack[action_count][2] = CardCreator.backTag_redo_stack[action_count][0]
+
+        #                 appendedCounter -= 1
+        #             else:
+        #                 if CardCreator.isFrontFocused:
+        #                     if CardCreator.frontTag_redo_stack[action_count][2] != None and float(CardCreator.frontTag_redo_stack[action_count][2]) > float(action_origin):
+        #                         CardCreator.frontTag_redo_stack[action_count][2] = textBox.index(CardCreator.frontTag_redo_stack[action_count][2] + plusOrMinus() + str(CardCreator.num_appended) + "c")
+        #                 else:
+        #                     if CardCreator.backTag_redo_stack[action_count][2] != None and float(CardCreator.backTag_redo_stack[action_count][2]) > float(action_origin):
+        #                         CardCreator.backTag_redo_stack[action_count][2] = textBox.index(CardCreator.backTag_redo_stack[action_count][2] + plusOrMinus() + str(CardCreator.num_appended) + "c")
+        #         action_count += 1
+        else:
+            if CardCreator.isFrontFocused:
+                iteration = CardCreator.frontTag_undo_stack
+            else:
+                iteration = CardCreator.backTag_undo_stack
+            action_count = 0 
+            index_list = iteration[len(iteration) - CardCreator.num_appended: len(iteration)]
+            current_index_list = [el[2] for el in index_list]
+            current_id_stack = [el[3] for el in index_list]
+
+            action_origin = iteration[len(iteration) - CardCreator.num_appended][0]
+            print("CURRENT DELETE INDEX LIST", current_index_list)
+            print("ORIGIN", action_origin)
+            for action in iteration:
+                
+                print("OH BOY", action)
+                if CardCreator.isDelete and action[3] in current_id_stack:
+                    print(action)
+                    print(current_index_list)
+                    if CardCreator.isFrontFocused:
+                        CardCreator.frontTag_undo_stack[current_id_stack.index(action[3] )][3] = action[3]
+                        CardCreator.frontTag_undo_stack[len(iteration) -  current_id_stack.index(action[3]) - 1][2], CardCreator.frontTag_undo_stack[action_count][2] = None, None
+                    else:
+                        CardCreator.backTag_undo_stack[len(iteration) -  current_id_stack.index(action[3]) - 1][3] = action[3]
+                        CardCreator.backTag_undo_stack[len(iteration) -  current_id_stack.index(action[3]) - 1][2], CardCreator.backTag_undo_stack[action_count][2] = None, None
+                else:
+                    if CardCreator.isFrontFocused:
+                        if not action[3] in current_id_stack and CardCreator.frontTag_undo_stack[action_count][2] != None and float(CardCreator.frontTag_undo_stack[action_count][2]) >= float(action_origin):
+                            CardCreator.frontTag_undo_stack[action_count][2] = textBox.index(CardCreator.frontTag_undo_stack[action_count][2] + plusOrMinus() + str(CardCreator.num_appended) + "c")
+                    else:
+                        if not action[3] in current_id_stack and CardCreator.backTag_undo_stack[action_count][2] != None and float(CardCreator.backTag_undo_stack[action_count][2]) >= float(action_origin):
+                            CardCreator.backTag_undo_stack[action_count][2] = textBox.index(CardCreator.backTag_undo_stack[action_count][2] + plusOrMinus() + str(CardCreator.num_appended) + "c")
+                action_count += 1
+        CardCreator.isNotUndoRedoDelete = False
+        CardCreator.isDelete = False
+        CardCreator.isInsert = False
+        CardCreator.current_insert.clear()
+        CardCreator.num_appended = 0
+        print("FINISHED UNDO STACK", CardCreator.frontTag_undo_stack)
+        print("FINISHED REDO STACK", CardCreator.frontTag_redo_stack)
 
     def underlineText(button, textBox):
         if textBox.focus_get():
@@ -581,7 +853,9 @@ class CardCreator:
         
         CardCreator.backTag_undo_stack.clear()
         CardCreator.backTag_redo_stack.clear()
-        
+        CardCreator.total_backTag_ids = 0
+
+
         CardCreator.mainFrame.destroy()
         CardCreator.optionsFrame.destroy()
 
