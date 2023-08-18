@@ -84,7 +84,7 @@ class CardCreator:
 
         frontLabel = Label(inputFrameGrid,  text = "Front", font= "Arial 20 bold", width = 20)
         frontLabel.grid(row = 0, column = 1, pady = 10)
-
+        
         frontBox = FrameApp(property(lambda: inputFrameGrid))
         frontInput = Text(frontBox, height = 10, width =50, wrap= WORD, font = 'Arial', undo = True)
         CardCreator.createEditingOptions(frontEditOptionsFrame, frontInput, True)
@@ -134,7 +134,6 @@ class CardCreator:
             subButton = Button(CardCreator.selectionFrame ,text= "Change", width=10, height=2, font= "Arial 15", bg = '#C3C7C7', command = lambda: CardCreator.inputResponce(frontInput, backInput))
         subButton.pack(side = RIGHT, padx = 20, pady = 10)        
         
-        
         # index = frontInput.index("insert-1c")
         # print(index)
         # if "underline_tag" in frontInput.tag_names(index):
@@ -165,6 +164,8 @@ class CardCreator:
 
     def createEditingOptions(editingFrame, textBox, isFront):
         
+            
+
         def do_nothing(event):
             return "break"
 
@@ -179,16 +180,43 @@ class CardCreator:
         def activate_paste(event):
             CardCreator.isPaste = True
         
+        def activate_ctrl_right(event):
+            isCtrlRight = True
+        
+        def activate_ctrl_left(event):
+            isCtrlLeft = True
+
+        def evaluate_press(event):
+            if event.state == 4 and event.keysym == 'x':
+                if event.widget.get(event.widget.index("sel.first"), event.widget.index("sel.last")) == '':
+                    return "break"
+            elif event.state == 4 and event.keysym == 'c':
+                if not event.widget.tag_ranges("sel"):
+                    return "break"
+
+            # match event.keysym:
+            #     case "Right":
+                
+            #     case "Left":
+
+            #     case "Up":
+
+            #     case "Down":
+
+            
+
         buttonList = list()
         textBox.bind("<Control-t>", do_nothing)
         textBox.bind("<Control-d>", do_nothing)
         textBox.bind("<Control-z>", lambda event: activate_undo(event))
         textBox.bind("<Control-v>", lambda event: activate_paste(event))
+        textBox.bind("<Key>", lambda event: evaluate_press(event))
 
+        textBox.bind("<Control-Right>", lambda event: activate_ctrl_right(event))
+        textBox.bind("<Control-Left>", lambda event: activate_ctrl_left(event))
         textBox.bind("<Control-Shift-Z>", lambda event: activate_undo(event))
         textBox.bind("<Control-y>", lambda event: activate_redo(event) )
 
-        textBox.bind("<>")
 
         textBox.tag_config("underline_tag", underline = True)
         if isFront:
@@ -200,7 +228,55 @@ class CardCreator:
             CardCreator.back_button_list[0].config(command = lambda: CardCreator.underlineText(CardCreator.back_button_list[0], textBox))  
             CardCreator.back_button_list[0].grid(row = 0, column = 0)
         redirector = WidgetRedirector(textBox)
-    
+        
+        textBox.bind("<<Selection>>", lambda event: evaluateSelection(event))
+
+
+        def evaluateSelection(event):
+            s0, s1 = event.widget.index("sel.first"), event.widget.index("sel.last")
+            iterative = s0
+            isBold = True
+
+            if s0 != '':
+                while float(iterative) < float(s1):
+                    if not "underline_tag" in event.widget.tag_names(iterative):
+                        if CardCreator.isFrontFocused:
+                            CardCreator.front_button_list[0].config(bg = '#f0f0f0')
+                        else:
+                            CardCreator.back_button_list[0].config(bg = '#f0f0f0')
+                        CardCreator.underlined[not CardCreator.isFrontFocused] = False
+                        isBold = False
+                        break
+                    iterative = event.widget.index(iterative + "+1c")
+                if isBold:
+                    if CardCreator.isFrontFocused:
+                        CardCreator.front_button_list[0].config(bg = '#ABBCFF')
+                    else:
+                        CardCreator.back_button_list[0].config(bg = '#ABBCFF')
+                    CardCreator.underlined[not CardCreator.isFrontFocused] = True
+
+
+            # if float(start) <= float(s0) and float(end) >= float(s1):
+            #         print("TRUE")
+            #         if CardCreator.isFrontFocused:
+            #             CardCreator.front_button_list[0].config(bg = '#ABBCFF')
+            #         else:
+            #             CardCreator.back_button_list[0].config(bg = '#ABBCFF')
+            #         CardCreator.underlined[not CardCreator.isFrontFocused] = True
+            #     else:
+            #         print("FALSE")
+            #         if CardCreator.isFrontFocused:
+            #             CardCreator.front_button_list[0].config(bg = '#f0f0f0')
+            #         else:
+            #             CardCreator.back_button_list[0].config(bg = '#f0f0f0')
+            #         CardCreator.underlined[not CardCreator.isFrontFocused] = False
+            # else:
+            #     if CardCreator.isFrontFocused:
+            #         CardCreator.front_button_list[0].config(bg = '#f0f0f0')
+            #     else:
+            #         CardCreator.back_button_list[0].config(bg = '#f0f0f0')
+            #     CardCreator.underlined[not CardCreator.isFrontFocused] = False
+
 
         def on_mark(*args):
             hasIndex = True
@@ -213,12 +289,17 @@ class CardCreator:
                 elif "-1" in args[2]:
                     CardCreator.cursor_index = textBox.index("insert-2c")
                 elif args[2] == "insert":
-                     CardCreator.cursor_index = textBox.index("insert-1c")
-                elif args[2][0].isdigit():
+                    CardCreator.cursor_index = textBox.index("insert-1c")
+                # elif args[2][0].isdigit():
+                    # if isCtrlRight:
+                    #     CardCreator.cursor_index = textBox.index(args[2])
+                    #     isCtrlRight = False
+                    # elif isCtrlLeft:
+                    #     CardCreator.cursor_index = textBox.index(args[2] + "-1c")
+                    
+
                     # if textBox.tag_ranges("sel"):
-                    isSelection = True
                     # CardCreator.evaluateSelection(textBox)
-                    hasIndex = False
 
                 else:
                     print(*args, "GREATER THAN 2")
@@ -228,9 +309,8 @@ class CardCreator:
                 CardCreator.cursor_index = textBox.index("insert-1c")
             if hasIndex:
                 CardCreator.evaluateIndex(textBox)
-            original_mark(*args)
-            if isSelection:
-                CardCreator.evaluateSelection(textBox)
+            return original_mark(*args)
+
 
         
         def on_delete(*args):
