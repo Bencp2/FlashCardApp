@@ -1,9 +1,9 @@
-import database as db
+import CreateDatabase as cd
 
 class CDeck:
 
     deck = None
-    crsr = db.database().cursor()
+    crsr = cd.Database().cursor()
 
 
     def changeDeck(newDeck):

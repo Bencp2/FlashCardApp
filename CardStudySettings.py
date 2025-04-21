@@ -1,17 +1,14 @@
-import database as db
+import tkinter
+import CreateDatabase as cd
 import window as w
-import cardMenu as cm
 import CardStudy as cs
-import TitleLabel as tl
 from EntryApp import EntryApp
 from FrameApp import FrameApp
 from CurrentDeck import CDeck
-from tkinter import *
-from tkinter import messagebox
 
 
 class CSS:
-    crsr = db.database().cursor()
+    crsr = cd.Database().cursor()
 
     optionsFrame = None
     selectionFrame = None
@@ -31,7 +28,7 @@ class CSS:
 
         CSS.mainFrame = FrameApp(property(lambda: w.window()))
         CSS.mainFrame.config(bg = '#4A7A8C')
-        CSS.mainFrame.pack(fill = BOTH, expand = TRUE)
+        CSS.mainFrame.pack(fill = tkinter.BOTH, expand =tkinter.TRUE)
 
 
         CSS.selectionFrame = FrameApp(property(lambda: CSS.mainFrame))
@@ -51,16 +48,16 @@ class CSS:
     def createOptionsFrame():
        
         CSS.optionsFrame = FrameApp(property(lambda: w.window()))
-        CSS.optionsFrame.config(bg= '#6CB2CC', relief = RIDGE, borderwidth= 3)
+        CSS.optionsFrame.config(bg= '#6CB2CC', relief = tkinter.RIDGE, borderwidth= 3)
         CSS.optionsFrame.place(x= 20, y = 120)
 
         CSS.optionsFrame = CSS.optionsFrame.createOptionsLabel()
 
-        backButton = Button(CSS.optionsFrame ,text= "Back to Study", width=15, height=2, font = "Arial 12", command = lambda: CSS.returnToStudyPage())
+        backButton = tkinter.Button(CSS.optionsFrame ,text= "Back to Study", width=15, height=2, font = "Arial 12", command = lambda: CSS.returnToStudyPage())
         backButton.grid(row = 1, column= 0, padx = 10, pady = 10)
    
     def restoreDefaultSettings():
-        if messagebox.askokcancel("Restore Default", "Are you sure that you want to restore the default settings?"):
+        if tkinter.messagebox.askokcancel("Restore Default", "Are you sure that you want to restore the default settings?"):
             deckStudyInfo = CSS.crsr.execute("SELECT * FROM deckStudy WHERE deck_id = " + str(CDeck.deck[0])).fetchone()
             if deckStudyInfo[1] != 0:
                 CSS.crsr.execute("UPDATE deckstudy SET study_method = 0 WHERE deck_id = " + str(CDeck.deck[0]))
@@ -105,17 +102,17 @@ class CSS:
         CSS.masteryEntry = CSS.masteryEntry.keepOrCorrectResponce()
 
 
-        db.database().commit()
+        cd.Database().commit()
 
     def createMethodQuestion():
         CSS.methodQuestFrame = FrameApp(property(lambda: CSS.selectionFrame))
-        CSS.methodQuestFrame.config(relief = RIDGE, borderwidth = 5)
-        CSS.methodQuestFrame.grid(row = 0, column = 0, rowspan = 2, padx = 25, pady = 20, sticky = NSEW)
+        CSS.methodQuestFrame.config(relief = tkinter.RIDGE, borderwidth = 5)
+        CSS.methodQuestFrame.grid(row = 0, column = 0, rowspan = 2, padx = 25, pady = 20, sticky = tkinter.NSEW)
 
         CSS.methodQuestFrame = CSS.methodQuestFrame.createQuestLabel("Select one of the following study methods you would like you use:", 40, 500)
 
         optionValue = CSS.crsr.execute("SELECT study_method FROM deckStudy WHERE deck_id = " + str(CDeck.deck[0])).fetchone()[0]
-        CSS.methodQuestFrame.var = IntVar(value = optionValue)
+        CSS.methodQuestFrame.var = tkinter.IntVar(value = optionValue)
 
         textList = ["Same order as cards in Card Menu (Default)", "Opposite order as cards in Card Menu", "Random Order", "Least understood to most understood", "Most understood to least understood"]
     
@@ -129,13 +126,13 @@ class CSS:
 
     def createLevelQuestion():
         CSS.levelQuestFrame = FrameApp(property(lambda: CSS.selectionFrame))
-        CSS.levelQuestFrame.config(relief = RIDGE, borderwidth = 5)
-        CSS.levelQuestFrame.grid(row = 0, column = 1, padx = 25, pady = 20, sticky = NSEW)
+        CSS.levelQuestFrame.config(relief = tkinter.RIDGE, borderwidth = 5)
+        CSS.levelQuestFrame.grid(row = 0, column = 1, padx = 25, pady = 20, sticky = tkinter.NSEW)
         CSS.levelQuestFrame = CSS.levelQuestFrame.createQuestLabel("Select one of the following levels of understanding to study:", 45, 500)
 
 
         optionValue =  CSS.crsr.execute("SELECT study_level FROM deckStudy WHERE deck_id = " + str(CDeck.deck[0])).fetchone()[0]
-        CSS.levelQuestFrame.var = IntVar(value = optionValue)
+        CSS.levelQuestFrame.var = tkinter.IntVar(value = optionValue)
 
         textList = ["Only non-mastered cards", "Only mastered cards ", "Both non-mastered and mastered cards (Default)"]
 
@@ -149,13 +146,13 @@ class CSS:
 
     def createEnableQuestion():
         CSS.enableQuestFrame = FrameApp(property(lambda: CSS.selectionFrame))
-        CSS.enableQuestFrame.config(relief = RIDGE, borderwidth = 5)
-        CSS.enableQuestFrame.grid(row = 1, column = 1, padx = 25, pady = 20, sticky = NSEW)
+        CSS.enableQuestFrame.config(relief = tkinter.RIDGE, borderwidth = 5)
+        CSS.enableQuestFrame.grid(row = 1, column = 1, padx = 25, pady = 20, sticky = tkinter.NSEW)
         CSS.enableQuestFrame = CSS.enableQuestFrame.createQuestLabel("Open Responce:", 15, 500)
 
 
         optionValue = CSS.crsr.execute("SELECT enable_open FROM deckStudy WHERE deck_id = " + str(CDeck.deck[0])).fetchone()[0]
-        CSS.enableQuestFrame.var = BooleanVar(value = optionValue)
+        CSS.enableQuestFrame.var = tkinter.BooleanVar(value = optionValue)
 
         textList = ["Enabled (Default)", "Disabled"]
         boolList = [True, False]
@@ -171,12 +168,12 @@ class CSS:
 
     def createStarredQuestion():
         CSS.starredQuestFrame = FrameApp(property(lambda: CSS.selectionFrame))
-        CSS.starredQuestFrame.config(relief = RIDGE, borderwidth = 5)
-        CSS.starredQuestFrame.grid(row = 2, column = 1, padx = 25, pady = 20, sticky = EW)
+        CSS.starredQuestFrame.config(relief = tkinter.RIDGE, borderwidth = 5)
+        CSS.starredQuestFrame.grid(row = 2, column = 1, padx = 25, pady = 20, sticky = tkinter.EW)
         CSS.starredQuestFrame = CSS.starredQuestFrame.createQuestLabel("Starred Only:", 15, 500)
 
         optionValue = CSS.crsr.execute("SELECT study_starred FROM deckStudy WHERE deck_id = " + str(CDeck.deck[0])).fetchone()[0]
-        CSS.starredQuestFrame.var = BooleanVar(value = optionValue)
+        CSS.starredQuestFrame.var = tkinter.BooleanVar(value = optionValue)
 
         textList = ["Enabled", "Disabled (Default)"]
         boolList = [True, False]
@@ -196,8 +193,8 @@ class CSS:
     def createMasteryQuestion():
         
         CSS.masteryQuestFrame = FrameApp(property(lambda: CSS.selectionFrame))
-        CSS.masteryQuestFrame.config(relief = RIDGE, borderwidth = 5)
-        CSS.masteryQuestFrame.grid(row = 2, column = 0, padx = 25, pady = 20, sticky= NSEW)
+        CSS.masteryQuestFrame.config(relief = tkinter.RIDGE, borderwidth = 5)
+        CSS.masteryQuestFrame.grid(row = 2, column = 0, padx = 25, pady = 20, sticky= tkinter.NSEW)
 
         CSS.masteryEntry = EntryApp(property(lambda: CSS.masteryQuestFrame), 2)
         CSS.masteryEntry.config(font = "Arial 25")
@@ -214,16 +211,16 @@ class CSS:
 
     def createSettingButtons():
         CSS.saveAndRestoreButtonFrame = FrameApp(property (lambda: CSS.selectionFrame))
-        CSS.saveAndRestoreButtonFrame.config(relief = RIDGE, borderwidth = 5)
-        CSS.saveAndRestoreButtonFrame.grid(row = 3, column = 0, columnspan = 2, padx = 25, pady = 20, sticky = W)
+        CSS.saveAndRestoreButtonFrame.config(relief = tkinter.RIDGE, borderwidth = 5)
+        CSS.saveAndRestoreButtonFrame.grid(row = 3, column = 0, columnspan = 2, padx = 25, pady = 20, sticky = tkinter.W)
 
-        saveButton = Button(CSS.saveAndRestoreButtonFrame, text = "Save Changes", command= lambda: CSS.updateSettings(), background = '#C3C7C7', font = "Arial 15")
+        saveButton = tkinter.Button(CSS.saveAndRestoreButtonFrame, text = "Save Changes", command= lambda: CSS.updateSettings(), background = '#C3C7C7', font = "Arial 15")
         saveButton.grid(row = 0, column = 0, padx = 20, pady = 10)
 
-        restoreDefaultButton = Button(CSS.saveAndRestoreButtonFrame, text = "Restore Default", command = lambda: CSS.restoreDefaultSettings(), background = '#C3C7C7', font = "Arial 15")
+        restoreDefaultButton = tkinter.Button(CSS.saveAndRestoreButtonFrame, text = "Restore Default", command = lambda: CSS.restoreDefaultSettings(), background = '#C3C7C7', font = "Arial 15")
         restoreDefaultButton.grid(row = 0, column = 1, padx = 20, pady = 10)
 
-        resetDeckMasteryButton = Button(CSS.saveAndRestoreButtonFrame, text = "Reset Mastery Progress", command = lambda: CSS.resetMasteryProgress(), background= '#C3C7C7', font = "Arial 15")
+        resetDeckMasteryButton = tkinter.Button(CSS.saveAndRestoreButtonFrame, text = "Reset Mastery Progress", command = lambda: CSS.resetMasteryProgress(), background= '#C3C7C7', font = "Arial 15")
         resetDeckMasteryButton.grid(row = 0, column = 2, padx = 20, pady = 10)
     
     def resetMasteryProgress():

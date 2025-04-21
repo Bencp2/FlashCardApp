@@ -1,14 +1,14 @@
-import database as db
-import window as w
-import cardMenu as cm
-import MainFrame as mf
-import TitleLabel as tl
-from CardStudySettings import CSS
-from FrameApp import FrameApp
-from tkinter import *
-from CurrentDeck import CDeck
+import tkinter
 import random
 import math
+import CreateDatabase as cd
+import window as w
+import CardMenu as cm
+import MainFrame as mf
+from CardStudySettings import CSS
+from FrameApp import FrameApp
+from CurrentDeck import CDeck
+
 
 class CS:
 
@@ -46,12 +46,12 @@ class CS:
     cards = list()
     
 
-    crsr = db.database().cursor()
+    crsr = cd.Database().cursor()
 
 
     def createStudyPage():
         CS.scrollWindow = mf.MainFrame(property(lambda: w.window()))
-        CS.scrollWindow.pack(fill = BOTH, expand = TRUE)
+        CS.scrollWindow.pack(fill = tkinter.BOTH, expand = tkinter.TRUE)
 
         CS.selectionFrame = FrameApp(property(lambda: CS.scrollWindow.getAddFrame()))
         CS.selectionFrame.config(bg = '#54a6c4')
@@ -73,7 +73,7 @@ class CS:
 
         if CS.deckStudyInfo == None:
             CS.crsr.execute("INSERT INTO deckStudy (deck_id) VALUES (?)", (CDeck.deck[0],))
-            db.database().commit()
+            cd.Database().commit()
             CS.deckStudyInfo = CS.crsr.execute("SELECT * FROM deckStudy WHERE deck_id = " + str(CDeck.deck[0])).fetchone()
 
 
@@ -98,7 +98,7 @@ class CS:
                 CS.cards = CS.crsr.execute("SELECT * FROM cards WHERE deck_id = " + str(CDeck.deck[0]) + " ORDER BY correctNum DESC").fetchall()
 
         if len(CS.cards) == 0:
-            noCardLabel = Label(CS.selectionFrame, text = "No cards exist in deck to study!", width = 53, height = 6, font = "Arial 15", relief= GROOVE, borderwidth= 5)
+            noCardLabel = tkinter.Label(CS.selectionFrame, text = "No cards exist in deck to study!", width = 53, height = 6, font = "Arial 15", relief= tkinter.GROOVE, borderwidth= 5)
             noCardLabel.grid(row = 0, column = 0, pady = 30)
 
 
@@ -108,7 +108,7 @@ class CS:
                     if card[6]:
                         CS.cards.remove(card)
                         if len(CS.cards) == 0:
-                            noCardLabel = Label(CS.selectionFrame, text = "All cards in this deck are mastered!\n\nTip: Increasing amount of correctness for mastery or reseting cards can make them unmastered", width = 53, height = 6, font = "Arial 15", wraplength = 570, relief= GROOVE, borderwidth= 5)
+                            noCardLabel = tkinter.Label(CS.selectionFrame, text = "All cards in this deck are mastered!\n\nTip: Increasing amount of correctness for mastery or reseting cards can make them unmastered", width = 53, height = 6, font = "Arial 15", wraplength = 570, relief= tkinter.GROOVE, borderwidth= 5)
                             noCardLabel.grid(row = 0, column = 0, pady = 30)
             case 1:
                 for card in CS.cards.copy():
@@ -116,7 +116,7 @@ class CS:
                     if not card[6]:
                         CS.cards.remove(card)
                         if len(CS.cards) == 0:
-                            noCardLabel = Label(CS.selectionFrame, text = "No cards in this deck are mastered!", width = 53, height = 6, font = "Arial 15", relief= GROOVE, borderwidth= 5)
+                            noCardLabel = tkinter.Label(CS.selectionFrame, text = "No cards in this deck are mastered!", width = 53, height = 6, font = "Arial 15", relief= tkinter.GROOVE, borderwidth= 5)
                             noCardLabel.grid(row = 0, column = 0, pady = 30)
         
 
@@ -125,7 +125,7 @@ class CS:
                 if not card[4]:
                     CS.cards.remove(card)
                     if len(CS.cards) == 0:
-                        noCardLabel = Label(CS.selectionFrame, text = "No cards in this deck are starred!", width = 53, height = 6, font = "Arial 15", relief= GROOVE, borderwidth= 5)
+                        noCardLabel = tkinter.Label(CS.selectionFrame, text = "No cards in this deck are starred!", width = 53, height = 6, font = "Arial 15", relief= tkinter.GROOVE, borderwidth= 5)
                         noCardLabel.grid(row = 0, column = 0, pady = 30)
 
         if CS.deckStudyInfo[4]:
@@ -141,7 +141,7 @@ class CS:
     def createStudyDisplay():
 
         
-        CS.cardNumLabel = Label(CS.selectionFrame, text = "1 out of " + str(len(CS.cards)), font = "Arial 20 bold", bg = '#54a6c4')
+        CS.cardNumLabel = tkinter.Label(CS.selectionFrame, text = "1 out of " + str(len(CS.cards)), font = "Arial 20 bold", bg = '#54a6c4')
         CS.cardNumLabel.grid(row = 0, column = 0, pady = 10)
 
         CS.cardFrame = FrameApp(property(lambda: CS.selectionFrame))
@@ -149,35 +149,35 @@ class CS:
         CS.cardFrame.grid(row = 1, column = 0, pady = 30)
 
         CS.cardOptionsFrame = FrameApp(property(lambda: CS.selectionFrame))
-        CS.cardOptionsFrame.config(relief = RIDGE, borderwidth= 5, width = 1000, height = 300)
+        CS.cardOptionsFrame.config(relief = tkinter.RIDGE, borderwidth= 5, width = 1000, height = 300)
         CS.cardOptionsFrame.grid(row = 2, column = 0)
         CS.cardOptionsFrame.grid_propagate(False)
         
-        # CS.flipOrRevealButton = Button(CS.cardOptionsFrame, width = 15, height = 2, font = "Arial 12", background = '#C3C7C7')
+        # CS.flipOrRevealButton = tkinter.Button(CS.cardOptionsFrame, width = 15, height = 2, font = "Arial 12", background = '#C3C7C7')
         # CS.flipOrRevealButton.grid(row = 0, column = 0, padx = 10, pady = 10)
 
-        CS.backButton = Button(CS.cardOptionsFrame, width = 15, height = 2, text = "Back", font = "Arial 12", background = '#C3C7C7', state = DISABLED, command = lambda: CS.viewPreviousCard())
-        CS.backButton.grid(row = 2, column = 0, padx = 10, pady = 10, sticky = SW)
+        CS.backButton = tkinter.Button(CS.cardOptionsFrame, width = 15, height = 2, text = "Back", font = "Arial 12", background = '#C3C7C7', state = tkinter.DISABLED, command = lambda: CS.viewPreviousCard())
+        CS.backButton.grid(row = 2, column = 0, padx = 10, pady = 10, sticky = tkinter.SW)
 
 
-        CS.fowardButton = Button(CS.cardOptionsFrame, width = 15, height = 2, text = "Foward", font = "Arial 12", background = '#C3C7C7', command = lambda: CS.viewNextCard())
-        CS.fowardButton.grid(row = 2, column = 3, padx = 10, pady = 10, sticky = SE)
+        CS.fowardButton = tkinter.Button(CS.cardOptionsFrame, width = 15, height = 2, text = "Foward", font = "Arial 12", background = '#C3C7C7', command = lambda: CS.viewNextCard())
+        CS.fowardButton.grid(row = 2, column = 3, padx = 10, pady = 10, sticky = tkinter.SE)
 
         if len(CS.cards) <= 1:
-            CS.fowardButton.config(state = DISABLED)
+            CS.fowardButton.config(state = tkinter.DISABLED)
 
 
         CS.flipOrRevealQuestionFrame = FrameApp(property(lambda: CS.cardOptionsFrame))
-        questionLabel = Label(CS.flipOrRevealQuestionFrame, text = "How did you do?", font = "Arial 12")
+        questionLabel = tkinter.Label(CS.flipOrRevealQuestionFrame, text = "How did you do?", font = "Arial 12")
         questionLabel.pack(pady = 10)
-        correctButton = Button(CS.flipOrRevealQuestionFrame, text = "Correct", background = '#C3C7C7', width = 15, height = 2)
-        wrongButton = Button(CS.flipOrRevealQuestionFrame, text = "Incorrect", background = '#C3C7C7', width = 15, height = 2)
+        correctButton = tkinter.Button(CS.flipOrRevealQuestionFrame, text = "Correct", background = '#C3C7C7', width = 15, height = 2)
+        wrongButton = tkinter.Button(CS.flipOrRevealQuestionFrame, text = "Incorrect", background = '#C3C7C7', width = 15, height = 2)
 
         correctButton.config(command = lambda: CS.updateCardScore(True, correctButton, wrongButton))
         wrongButton.config(command = lambda: CS.updateCardScore(False, correctButton, wrongButton))
 
-        correctButton.pack(side = LEFT, padx = 10)
-        wrongButton.pack(side = RIGHT, padx = 10)
+        correctButton.pack(side = tkinter.LEFT, padx = 10)
+        wrongButton.pack(side = tkinter.RIGHT, padx = 10)
         
         rowAndColumnConfiguration = [[0, 0], [1, 0], [0, 1], [0, 0]]
         count = 0
@@ -186,10 +186,10 @@ class CS:
             CS.cardOptionsFrame.grid_columnconfigure(count, weight = row_column[1])
             count += 1
 
-        reshuffleButton = Button(CS.cardOptionsFrame, text= "Reshuffle", font = "Arial 12", background = '#C3C7C7', width = 15, height = 2, command = lambda: CS.refreshStudyPage())
-        reshuffleButton.grid(row = 0, column = 1, padx = 10, pady = 10, sticky = NW)
+        reshuffleButton = tkinter.Button(CS.cardOptionsFrame, text= "Reshuffle", font = "Arial 12", background = '#C3C7C7', width = 15, height = 2, command = lambda: CS.refreshStudyPage())
+        reshuffleButton.grid(row = 0, column = 1, padx = 10, pady = 10, sticky = tkinter.NW)
 
-        CS.masteryRemainLabel = Label(CS.cardOptionsFrame, font = "Arial 12")
+        CS.masteryRemainLabel = tkinter.Label(CS.cardOptionsFrame, font = "Arial 12")
         CS.masteryRemainLabel.grid(row = 2, column = 2, pady = 10, padx = 10)
 
 
@@ -212,18 +212,18 @@ class CS:
     #     CS.flipOrRevealQuestionFrame.grid_forget()
     #     for child in CS.flipOrRevealQuestionFrame.winfo_children():
     #         if child.cget("text") != "How did you do?":
-    #             child.configure(state = NORMAL)
+    #             child.configure(state = tkinter.NORMAL)
     #     CS.masteryRemainLabel.config(text = "")
        
 
-    #     CS.backButton.config(state = DISABLED)
+    #     CS.backButton.config(state = tkinter.DISABLED)
     #     CS.flipOrRevealButton.destroy()
     #     CS.createCardList()
     #     CS.cardNumLabel.config(text = "1 out of " + str(len(CS.cards)))
     #     if len(CS.cards) > 1:
-    #         CS.fowardButton.config(state = NORMAL)
+    #         CS.fowardButton.config(state = tkinter.NORMAL)
     #     else:
-    #         CS.fowardButton.config(state = DISABLED)
+    #         CS.fowardButton.config(state = tkinter.DISABLED)
     #     CS.createStatsDisplay()
     #     if len(CS.cards) > 0:
     #         CS.createCardDisplay()
@@ -234,7 +234,7 @@ class CS:
 
     def createStatsDisplay():
         CS.statisticsFrame = FrameApp(property(lambda: CS.cardOptionsFrame))
-        CS.statisticsFrame.config(relief= SOLID, borderwidth= 2)
+        CS.statisticsFrame.config(relief= tkinter.SOLID, borderwidth= 2)
         CS.statisticsFrame.grid(row = 0, column = 3)
         CS.masteredStats = 0
 
@@ -242,77 +242,77 @@ class CS:
         if CS.deckStudyInfo[4] and any(CS.cardDisplays) and not all(CS.cardDisplays):
             CS.correctStats = [0] * 3
             CS.incorrectStats = [0] * 3
-            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Cards mastered: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#bf7c14'))
-            CS.statsLabels.append(Label(CS.statisticsFrame, text = "\nTotal correct answers: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#37a749'))
-            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Correct answers with Flips: 0", font = "Arial 12", justify= LEFT, foreground= '#37a749'))
-            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Correct answers with Reveals: 0", font = "Arial 12", justify= LEFT, foreground= '#37a749'))
-            CS.statsLabels.append(Label(CS.statisticsFrame, text = "\nTotal incorrect answers: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#ea1517'))
-            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Incorrect answers with Flips: 0", font = "Arial 12", justify= LEFT, foreground= '#ea1517'))
-            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Incorrect answers with Reveals: 0", font = "Arial 12", justify= LEFT, foreground= '#ea1517'))
+            CS.statsLabels.append(tkinter.Label(CS.statisticsFrame, text = "Cards mastered: 0", font = "Arial 12 bold", justify= tkinter.LEFT, foreground= '#bf7c14'))
+            CS.statsLabels.append(tkinter.Label(CS.statisticsFrame, text = "\nTotal correct answers: 0", font = "Arial 12 bold", justify= tkinter.LEFT, foreground= '#37a749'))
+            CS.statsLabels.append(tkinter.Label(CS.statisticsFrame, text = "Correct answers with Flips: 0", font = "Arial 12", justify= tkinter.LEFT, foreground= '#37a749'))
+            CS.statsLabels.append(tkinter.Label(CS.statisticsFrame, text = "Correct answers with Reveals: 0", font = "Arial 12", justify= tkinter.LEFT, foreground= '#37a749'))
+            CS.statsLabels.append(tkinter.Label(CS.statisticsFrame, text = "\nTotal incorrect answers: 0", font = "Arial 12 bold", justify= tkinter.LEFT, foreground= '#ea1517'))
+            CS.statsLabels.append(tkinter.Label(CS.statisticsFrame, text = "Incorrect answers with Flips: 0", font = "Arial 12", justify= tkinter.LEFT, foreground= '#ea1517'))
+            CS.statsLabels.append(tkinter.Label(CS.statisticsFrame, text = "Incorrect answers with Reveals: 0", font = "Arial 12", justify= tkinter.LEFT, foreground= '#ea1517'))
 
         else:
             CS.correctStats, CS.incorrectStats = ([0], [0])
-            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Cards mastered: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#bf7c14'))
-            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Total correct answers: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#37a749'))
-            CS.statsLabels.append(Label(CS.statisticsFrame, text = "Total incorrect answers: 0", font = "Arial 12 bold", justify= LEFT, foreground= '#ea1517'))
+            CS.statsLabels.append(tkinter.Label(CS.statisticsFrame, text = "Cards mastered: 0", font = "Arial 12 bold", justify= tkinter.LEFT, foreground= '#bf7c14'))
+            CS.statsLabels.append(tkinter.Label(CS.statisticsFrame, text = "Total correct answers: 0", font = "Arial 12 bold", justify= tkinter.LEFT, foreground= '#37a749'))
+            CS.statsLabels.append(tkinter.Label(CS.statisticsFrame, text = "Total incorrect answers: 0", font = "Arial 12 bold", justify= tkinter.LEFT, foreground= '#ea1517'))
         
         labelNum = 0
         for label in CS.statsLabels:
-            label.grid(row = labelNum, column = 0, sticky = W)
+            label.grid(row = labelNum, column = 0, sticky = tkinter.W)
             labelNum += 1
         
 
     def createCardDisplay():            
             if CS.cardDisplays[CS.cardNum]:
-                frontLabel = Label(CS.cardFrame, text = "Front", font = "Arial 20 bold underline", bg = '#54a6c4')
+                frontLabel = tkinter.Label(CS.cardFrame, text = "Front", font = "Arial 20 bold underline", bg = '#54a6c4')
                 frontLabel.grid(row = 0, column = 0)
                 frontBox = FrameApp(property(lambda: CS.cardFrame))
-                frontBox.config(relief= RIDGE, borderwidth= 5)
-                frontText = Text(frontBox, font = "Arial 15", width = 52, height = 10, wrap = WORD)
-                frontText.insert(END,  CS.cards[CS.cardNum][2])
-                frontText.config(state = DISABLED)
+                frontBox.config(relief= tkinter.RIDGE, borderwidth= 5)
+                frontText = tkinter.Text(frontBox, font = "Arial 15", width = 52, height = 10, wrap = tkinter.WORD)
+                frontText.insert(tkinter.END,  CS.cards[CS.cardNum][2])
+                frontText.config(state = tkinter.DISABLED)
 
-                frontScroll = Scrollbar(frontBox)
+                frontScroll = tkinter.Scrollbar(frontBox)
                 frontText.config(yscrollcommand= frontScroll.set)
 
-                frontScroll.config(command= frontText.yview, orient= VERTICAL)
-                frontText.pack(side = LEFT)
-                frontScroll.pack(side = RIGHT, fill = Y, expand = FALSE)
+                frontScroll.config(command= frontText.yview, orient= tkinter.VERTICAL)
+                frontText.pack(side = tkinter.LEFT)
+                frontScroll.pack(side = tkinter.RIGHT, fill = tkinter.Y, expand = tkinter.FALSE)
                 frontBox.grid(row = 1, column = 0, padx = 10, pady = 10)
 
 
-                backResponceLabel = Label(CS.cardFrame, text = "Your Answer", font = "Arial 20 bold underline", bg = '#54a6c4')
+                backResponceLabel = tkinter.Label(CS.cardFrame, text = "Your Answer", font = "Arial 20 bold underline", bg = '#54a6c4')
                 backResponceLabel.grid(row = 0, column = 1)
 
                 backResponceBox = FrameApp(property(lambda: CS.cardFrame))
-                backResponceBox.config(relief= RIDGE, borderwidth= 5)
+                backResponceBox.config(relief= tkinter.RIDGE, borderwidth= 5)
 
-                backResponce = Text(backResponceBox, font = "Arial 15", width = 52, height = 10, wrap = WORD)
+                backResponce = tkinter.Text(backResponceBox, font = "Arial 15", width = 52, height = 10, wrap = tkinter.WORD)
                 
-                backResponceScroll = Scrollbar(backResponceBox)
+                backResponceScroll = tkinter.Scrollbar(backResponceBox)
                 backResponce.config(yscrollcommand= backResponceScroll.set)
-                backResponceScroll.config(command = backResponce.yview, orient= VERTICAL)
-                backResponce.pack(side = LEFT)
-                backResponceScroll.pack(side = RIGHT, fill = Y, expand = FALSE)
+                backResponceScroll.config(command = backResponce.yview, orient= tkinter.VERTICAL)
+                backResponce.pack(side = tkinter.LEFT)
+                backResponceScroll.pack(side = tkinter.RIGHT, fill = tkinter.Y, expand = tkinter.FALSE)
                 backResponceBox.grid(row = 1, column = 1, padx = 10, pady = 10)
 
-                CS.flipOrRevealButton = Button(CS.cardOptionsFrame, width = 15, height = 2, font = "Arial 12", background = '#C3C7C7', text = "Reveal Back", command = lambda: CS.revealBack(backResponce), state = NORMAL)
-                CS.flipOrRevealButton.grid(row = 0, column = 0, padx = 10, pady = 10, sticky = NW)
+                CS.flipOrRevealButton = tkinter.Button(CS.cardOptionsFrame, width = 15, height = 2, font = "Arial 12", background = '#C3C7C7', text = "Reveal Back", command = lambda: CS.revealBack(backResponce), state = tkinter.NORMAL)
+                CS.flipOrRevealButton.grid(row = 0, column = 0, padx = 10, pady = 10, sticky = tkinter.NW)
             else:
                 CS.isFlip = True
 
 
-                cardLabel = Label(CS.cardFrame, text = "Front", font = "Arial 20 bold underline", bg = '#54a6c4')
+                cardLabel = tkinter.Label(CS.cardFrame, text = "Front", font = "Arial 20 bold underline", bg = '#54a6c4')
                 cardLabel.grid(row = 0, column = 0)
                 cardVisualFrame = FrameApp(property(lambda: CS.cardFrame))
                 cardVisualFrame.grid(row = 1, column = 0, pady = 10)
 
-                cardVisual = Label(cardVisualFrame, text = CS.cards[CS.cardNum][2], width = 52, font = "Arial 15", anchor = NW, wraplength= 570, relief= GROOVE, borderwidth= 5, justify= LEFT)
+                cardVisual = tkinter.Label(cardVisualFrame, text = CS.cards[CS.cardNum][2], width = 52, font = "Arial 15", anchor = tkinter.NW, wraplength= 570, relief= tkinter.GROOVE, borderwidth= 5, justify= tkinter.LEFT)
                 cardVisual.pack(expand = True)
                 CS.cardFrontHeight = CS.adjustCardVisualHeight(cardVisual)
 
-                CS.flipOrRevealButton = Button(CS.cardOptionsFrame, width = 15, height = 2, font = "Arial 12", background = '#C3C7C7', text = "Flip", command = lambda: CS.flipCard(cardVisual, cardLabel), state = NORMAL)
-                CS.flipOrRevealButton.grid(row = 0, column = 0, padx = 10, pady = 10, sticky = NW)                
+                CS.flipOrRevealButton = tkinter.Button(CS.cardOptionsFrame, width = 15, height = 2, font = "Arial 12", background = '#C3C7C7', text = "Flip", command = lambda: CS.flipCard(cardVisual, cardLabel), state = tkinter.NORMAL)
+                CS.flipOrRevealButton.grid(row = 0, column = 0, padx = 10, pady = 10, sticky = tkinter.NW)                
 
     @staticmethod
     def adjustCardVisualHeight(cardVisual):
@@ -324,24 +324,24 @@ class CS:
 
 
     def revealBack(responceText):
-        CS.flipOrRevealButton.config(state = DISABLED)
-        responceText.config(state = DISABLED)
+        CS.flipOrRevealButton.config(state = tkinter.DISABLED)
+        responceText.config(state = tkinter.DISABLED)
 
-        backLabel = Label(CS.cardFrame, text = "Back", font = "Arial 20 bold underline", bg = '#54a6c4')
+        backLabel = tkinter.Label(CS.cardFrame, text = "Back", font = "Arial 20 bold underline", bg = '#54a6c4')
         backLabel.grid(row = 2, column = 0, columnspan = 2)
 
         backBox = FrameApp(property(lambda: CS.cardFrame))
-        backBox.config(relief= RIDGE, borderwidth= 5)
+        backBox.config(relief= tkinter.RIDGE, borderwidth= 5)
 
-        backText = Text(backBox, font = "Arial 15", width = 52, height = 10, wrap = WORD)
-        backText.insert(END,  CS.cards[CS.cardNum][3])
-        backText.config(state = DISABLED)
+        backText = tkinter.Text(backBox, font = "Arial 15", width = 52, height = 10, wrap = tkinter.WORD)
+        backText.insert(tkinter.END,  CS.cards[CS.cardNum][3])
+        backText.config(state = tkinter.DISABLED)
 
-        backScroll = Scrollbar(backBox)
+        backScroll = tkinter.Scrollbar(backBox)
         backText.config(yscrollcommand= backScroll.set)
-        backScroll.config(command = backText.yview, orient= VERTICAL)
-        backText.pack(side = LEFT)
-        backScroll.pack(side = RIGHT, fill = Y, expand = FALSE)
+        backScroll.config(command = backText.yview, orient= tkinter.VERTICAL)
+        backText.pack(side = tkinter.LEFT)
+        backScroll.pack(side = tkinter.RIGHT, fill = tkinter.Y, expand = tkinter.FALSE)
         backBox.grid(row = 3, column = 0, columnspan = 2, pady = 10)
         if not CS.cards[CS.cardNum][6]:
             CS.flipOrRevealQuestionFrame.grid(row = 0, column = 2, rowspan = 2, pady = 20)
@@ -372,8 +372,8 @@ class CS:
 
 
     def updateCardScore(user_responce, cButton, wButton):
-        cButton.config(state = DISABLED)
-        wButton.config(state = DISABLED)
+        cButton.config(state = tkinter.DISABLED)
+        wButton.config(state = tkinter.DISABLED)
         
         if user_responce:
             CS.crsr.execute("UPDATE cards SET correctNum = " + str(CS.cards[CS.cardNum][5] + 1) + " WHERE c_id = " + str(CS.cards[CS.cardNum][0]))
@@ -450,14 +450,14 @@ class CS:
         CS.flipOrRevealQuestionFrame.grid_forget()
         for child in CS.flipOrRevealQuestionFrame.winfo_children():
             if child.cget("text") != "How did you do?":
-                child.configure(state = NORMAL)
+                child.configure(state = tkinter.NORMAL)
         CS.masteryRemainLabel.config(text = "")
         CS.cardNum -= 1
         CS.cardNumLabel.config(text = str(CS.cardNum + 1) + " out of " + str(len(CS.cards)))
 
-        CS.fowardButton.config(state = NORMAL)
+        CS.fowardButton.config(state = tkinter.NORMAL)
         if CS.cardNum == 0:
-            CS.backButton.config(state = DISABLED)
+            CS.backButton.config(state = tkinter.DISABLED)
         CS.flipOrRevealButton.destroy()
         CS.createCardDisplay()
 
@@ -470,15 +470,15 @@ class CS:
         CS.flipOrRevealQuestionFrame.grid_forget()
         for child in CS.flipOrRevealQuestionFrame.winfo_children():
             if child.cget("text") != "How did you do?":
-                child.configure(state = NORMAL)
+                child.configure(state = tkinter.NORMAL)
 
         CS.masteryRemainLabel.config(text = "")
         CS.cardNum += 1
         CS.cardNumLabel.config(text = str(CS.cardNum + 1) + " out of " + str(len(CS.cards)))
 
-        CS.backButton.config(state = NORMAL)
+        CS.backButton.config(state = tkinter.NORMAL)
         if CS.cardNum == len(CS.cards) - 1:
-            CS.fowardButton.config(state = DISABLED)
+            CS.fowardButton.config(state = tkinter.DISABLED)
         CS.flipOrRevealButton.destroy()
 
         CS.createCardDisplay()
@@ -488,15 +488,15 @@ class CS:
     def createOptionsFrame():
 
         CS.optionsFrame = FrameApp(property(lambda: w.window()))
-        CS.optionsFrame.config(bg= '#6CB2CC', relief = RIDGE, borderwidth= 3)
+        CS.optionsFrame.config(bg= '#6CB2CC', relief = tkinter.RIDGE, borderwidth= 3)
         CS.optionsFrame.place(x= 20, y = 120)
 
         CS.optionsFrame.createOptionsLabel()
 
-        backButton = Button(CS.optionsFrame ,text= "Back to Cards", width=15, height=2, font = "Arial 12", command = lambda: CS.backToCardMenu())
+        backButton = tkinter.Button(CS.optionsFrame ,text= "Back to Cards", width=15, height=2, font = "Arial 12", command = lambda: CS.backToCardMenu())
         backButton.grid(row = 1, column= 0, padx = 10, pady = 10)
 
-        settingsButton = Button(CS.optionsFrame ,text= "Settings", width=15, height=2, font = "Arial 12", command = lambda: CS.changeToSettings())
+        settingsButton = tkinter.Button(CS.optionsFrame ,text= "Settings", width=15, height=2, font = "Arial 12", command = lambda: CS.changeToSettings())
         settingsButton.grid(row = 2, column= 0, padx = 10, pady = 10)
      
 

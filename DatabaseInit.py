@@ -1,8 +1,8 @@
-import database as db
+import CreateDatabase as cd
 
 
-def InitiallizeDatabase():
-   crsr = db.database().cursor()
+def initiallizeDB():
+   crsr = cd.Database().cursor()
 
    crsr.execute("""CREATE TABLE decks (deck_id INTEGER PRIMARY KEY AUTOINCREMENT,
    name VARCHAR(255) DEFAULT "unamed",
@@ -20,9 +20,12 @@ def InitiallizeDatabase():
 
    crsr.execute("""CREATE TABLE cardFont 
    (c_id INTEGER PRIMARY KEY REFERENCES cards(c_id) ON DELETE CASCADE, 
-   underline_list VARCHAR(255),
-   bold_list VARCHAR(255),
-   color_list VARCHAR(255)
+   front_underline_list VARCHAR(255),
+   back_underline_list VARCHAR(255),
+   front_bold_list VARCHAR(255),
+   back_bold_list VARCHAR(255),
+   front_color_list VARCHAR(255),
+   back_color_list VARCHAR(255)
    );""")
 
 
@@ -41,4 +44,4 @@ def InitiallizeDatabase():
    study_starred BOOLEAN NOT NULL DEFAULT false
    );""")
 
-   db.database().commit()
+   cd.Database().commit()

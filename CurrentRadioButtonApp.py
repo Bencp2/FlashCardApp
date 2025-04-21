@@ -1,5 +1,5 @@
-import window as w
 from tkinter import *
+import window as w
 
 class CurrentRadioButton:
 

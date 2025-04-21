@@ -1,19 +1,18 @@
-import database as db
+import tkinter
+from operator import itemgetter
+import CreateDatabase as cd
 import window as w
-from tkinter import *
-import cardMenu as cm
+import CardMenu as cm
 import TitleLabel as tl
 from FrameApp import FrameApp
-import cardMenu as cm
 from CurrentDeck import CDeck
 from idlelib.redirector import WidgetRedirector
-from TextApp import MyText
-from operator import itemgetter
+from tkinter.TextApp import MyText
 
 class CardCreator:
 
     
-    crsr = db.database().cursor()
+    crsr = cd.Database().cursor()
 
     mainFrame = None
     optionsFrame = None 
@@ -39,6 +38,10 @@ class CardCreator:
     backTag_redo_stack = []
     back_button_list = []
 
+    clipboard = None
+
+    isEnd = False
+    isMovement = False
     cursor_index = None
     isInsert = False
     current_insert = []
@@ -61,18 +64,18 @@ class CardCreator:
 
         CardCreator.mainFrame = FrameApp(property(lambda: w.window()))
         CardCreator.mainFrame.config(bg = '#4A7A8C')
-        CardCreator.mainFrame.pack(fill = BOTH, expand = TRUE)
+        CardCreator.mainFrame.pack(fill = tkinter.BOTH, expand = tkinter.TRUE)
 
 
         CardCreator.selectionFrame = FrameApp(property(lambda: CardCreator.mainFrame))
-        CardCreator.selectionFrame.config(relief = GROOVE, borderwidth = 5)
+        CardCreator.selectionFrame.config(relief = tkinter.GROOVE, borderwidth = 5)
         CardCreator.selectionFrame.pack(pady = 30)
         CardCreator.createOptionsFrame()
 
         if CardCreator.createBool:
-            clabel = Label(CardCreator.selectionFrame,  text = "Enter Front and Back for card", font= "Arial 25 bold underline")
+            clabel =tkinter.Label(CardCreator.selectionFrame,  text = "Enter Front and Back for card", font= "Arial 25 bold underline")
         else:
-            clabel = Label(CardCreator.selectionFrame,  text = "Edit Front or/and Back for card", font= "Arial 25 bold underline")
+            clabel =tkinter.Label(CardCreator.selectionFrame,  text = "Edit Front or/and Back for card", font= "Arial 25 bold underline")
         clabel.pack(pady = 50)
 
         inputFrameGrid = FrameApp(property(lambda: CardCreator.selectionFrame))
@@ -82,42 +85,42 @@ class CardCreator:
         
         frontEditOptionsFrame = FrameApp(property(lambda: inputFrameGrid))
 
-        frontLabel = Label(inputFrameGrid,  text = "Front", font= "Arial 20 bold", width = 20)
+        frontLabel =tkinter.Label(inputFrameGrid,  text = "Front", font= "Arial 20 bold", width = 20)
         frontLabel.grid(row = 0, column = 1, pady = 10)
         
         frontBox = FrameApp(property(lambda: inputFrameGrid))
-        frontInput = Text(frontBox, height = 10, width =50, wrap= WORD, font = 'Arial', undo = True)
+        frontInput = tkinter.Text(frontBox, height = 10, width =50, wrap=  tkinter.WORD, font = 'Arial')
         CardCreator.createEditingOptions(frontEditOptionsFrame, frontInput, True)
         frontEditOptionsFrame.grid(row = 0, column = 0)
 
         if not CardCreator.createBool:
-            frontInput.insert(END, CardCreator.currentCard[2])
-        frontInput.pack(side = LEFT)
-        frontScroll = Scrollbar(frontBox)
-        frontInput.config(yscrollcommand= frontScroll.set)
+            frontInput.insert( tkinter.END, CardCreator.currentCard[2])
+        frontInput.pack(side = tkinter.LEFT)
+        frontScroll = tkinter.Scrollbar(frontBox)
+        frontInput.config(yscrollcommand= frontScroll.set, undo = True)
 
-        frontScroll.config(command= frontInput.yview, orient= VERTICAL)
-        frontScroll.pack(side = RIGHT, fill = Y, expand = FALSE)
+        frontScroll.config(command= frontInput.yview, orient= tkinter.VERTICAL)
+        frontScroll.pack(side = tkinter.RIGHT, fill = tkinter.Y, expand = tkinter.FALSE)
         frontBox.grid(row = 1, column = 0, columnspan= 2, padx = 10)
         
         backEditOptionsFrame = FrameApp(property(lambda: inputFrameGrid))
 
-        backLabel = Label(inputFrameGrid,  text = "Back", font= "Arial 20 bold", width = 20)
+        backLabel =tkinter.Label(inputFrameGrid,  text = "Back", font= "Arial 20 bold", width = 20)
         backLabel.grid(row = 0, column = 3, pady = 10)
         
-        backBox = Frame(master=inputFrameGrid)
-        backInput = Text(master= backBox, height =  10, width = 50, wrap= WORD, font = 'Arial', undo = True)
+        backBox = tkinter.Frame(master=inputFrameGrid)
+        backInput = tkinter.Text(master= backBox, height =  10, width = 50, wrap=  tkinter.WORD, font = 'Arial')
         CardCreator.createEditingOptions(backEditOptionsFrame, backInput, False)
         backEditOptionsFrame.grid(row = 0, column = 2)
 
         if not CardCreator.createBool:
-            backInput.insert(END, CardCreator.currentCard[3])
+            backInput.insert( tkinter.END, CardCreator.currentCard[3])
 
-        backInput.pack(side = LEFT)
-        backScroll = Scrollbar(backBox )
-        backInput.config(yscrollcommand= backScroll.set)
-        backScroll.config(command= backInput.yview, orient= VERTICAL)
-        backScroll.pack(side = RIGHT, fill = Y, expand = FALSE)
+        backInput.pack(side = tkinter.LEFT)
+        backScroll = tkinter.Scrollbar(backBox )
+        backInput.config(yscrollcommand= backScroll.set, undo = True)
+        backScroll.config(command= backInput.yview, orient= tkinter.VERTICAL)
+        backScroll.pack(side = tkinter.RIGHT, fill = Y, expand = tkinter.FALSE)
         
         backBox.grid(row = 1, column = 2, columnspan= 2, padx = 10)
 
@@ -129,10 +132,10 @@ class CardCreator:
 
         
         if CardCreator.createBool:
-            subButton = Button(CardCreator.selectionFrame ,text= "Create", width=10, height=2, font= "Arial 15", bg = '#C3C7C7', command = lambda: CardCreator.inputResponce(frontInput, backInput))
+            subButton = tkinter.Button(CardCreator.selectionFrame ,text= "Create", width=10, height=2, font= "Arial 15", bg = '#C3C7C7', command = lambda: CardCreator.inputResponce(frontInput, backInput))
         else:
-            subButton = Button(CardCreator.selectionFrame ,text= "Change", width=10, height=2, font= "Arial 15", bg = '#C3C7C7', command = lambda: CardCreator.inputResponce(frontInput, backInput))
-        subButton.pack(side = RIGHT, padx = 20, pady = 10)        
+            subButton = tkinter.Button(CardCreator.selectionFrame ,text= "Change", width=10, height=2, font= "Arial 15", bg = '#C3C7C7', command = lambda: CardCreator.inputResponce(frontInput, backInput))
+        subButton.pack(side = tkinter.RIGHT, padx = 20, pady = 10)        
         
         # index = frontInput.index("insert-1c")
         # print(index)
@@ -155,16 +158,16 @@ class CardCreator:
         CardCreator.isFrontFocused = frontFocus
         print("WTF MAN")
         for child in focusedFrame.winfo_children():
-            child.config(state = NORMAL)
+            child.config(state = tkinter.NORMAL)
             
 
         for child in unfocusedFrame.winfo_children():
-            child.config(bg = '#f0f0f0', state = DISABLED)
+            child.config(bg = '#f0f0f0', state = tkinter.DISABLED)
 
 
     def createEditingOptions(editingFrame, textBox, isFront):
         
-            
+        isRepeat = False
 
         def do_nothing(event):
             return "break"
@@ -187,13 +190,30 @@ class CardCreator:
             isCtrlLeft = True
 
         def evaluate_press(event):
-            if event.state == 4 and event.keysym == 'x':
-                if event.widget.get(event.widget.index("sel.first"), event.widget.index("sel.last")) == '':
-                    return "break"
-            elif event.state == 4 and event.keysym == 'c':
-                if not event.widget.tag_ranges("sel"):
-                    return "break"
+            print(event.state)
+            # if event.state == 12 and event.keysym == 'x':
+            #     print(event.widget.index("sel.first"), event.widget.index("sel.last"))
+            #     if event.widget.get(event.widget.index("sel.first"), event.widget.index("sel.last")) == '':
+                    
+            #         return "break"
+            # elif event.state == 12 and event.keysym == 'c':
+            #     if not event.widget.tag_ranges("sel"):
+            #         return "break"
+            if event.keysym in ('Right', 'Left', 'Up', 'Down'):
+                CardCreator.isMovement = True
+                print("IS KEY MOVE")
+            # elif event.keysym == 'Right':
+            #     CardCreator.cursor_index = textBox.index("insert")
+            # elif event.keysym == 'Left':
+            #     CardCreator.cursor_index = textBox.index("insert-2c")
 
+            # elif event.keysym == 'Up':
+
+            # elif event.keysym == 'Down':
+
+            # else:
+            #     print(event)
+            #     print(textBox.index("insert"))
             # match event.keysym:
             #     case "Right":
                 
@@ -202,29 +222,34 @@ class CardCreator:
             #     case "Up":
 
             #     case "Down":
-
+        def evaluate_copy_or_cut(event):
+           if event.widget.index("sel.first") == '' and event.widget.index("sel.last") == '':
+               return 'break'
             
 
         buttonList = list()
         textBox.bind("<Control-t>", do_nothing)
         textBox.bind("<Control-d>", do_nothing)
+        textBox.bind("<Control-c>", lambda event: evaluate_copy_or_cut(event))
+        textBox.bind("<Control-x>", lambda event: evaluate_copy_or_cut(event))
+
         textBox.bind("<Control-z>", lambda event: activate_undo(event))
         textBox.bind("<Control-v>", lambda event: activate_paste(event))
         textBox.bind("<Key>", lambda event: evaluate_press(event))
 
-        textBox.bind("<Control-Right>", lambda event: activate_ctrl_right(event))
-        textBox.bind("<Control-Left>", lambda event: activate_ctrl_left(event))
+        # textBox.bind("<Control-Right>", lambda event: activate_ctrl_right(event))
+        # textBox.bind("<Control-Left>", lambda event: activate_ctrl_left(event))
         textBox.bind("<Control-Shift-Z>", lambda event: activate_undo(event))
         textBox.bind("<Control-y>", lambda event: activate_redo(event) )
 
 
         textBox.tag_config("underline_tag", underline = True)
         if isFront:
-            CardCreator.front_button_list.append(Button(editingFrame, relief= FLAT, text = "U", font = "Arial 12 underline", state = DISABLED))
+            CardCreator.front_button_list.append(tkinter.Button(editingFrame, relief= tkinter.FLAT, text = "U", font = "Arial 12 underline", state = tkinter.DISABLED))
             CardCreator.front_button_list[0].config(command = lambda: CardCreator.underlineText(CardCreator.front_button_list[0], textBox))  
             CardCreator.front_button_list[0].grid(row = 0, column = 0)
         else:
-            CardCreator.back_button_list.append(Button(editingFrame, relief= FLAT, text = "U", font = "Arial 12 underline", state = DISABLED))
+            CardCreator.back_button_list.append(tkinter.Button(editingFrame, relief= tkinter.FLAT, text = "U", font = "Arial 12 underline", state = tkinter.DISABLED))
             CardCreator.back_button_list[0].config(command = lambda: CardCreator.underlineText(CardCreator.back_button_list[0], textBox))  
             CardCreator.back_button_list[0].grid(row = 0, column = 0)
         redirector = WidgetRedirector(textBox)
@@ -236,7 +261,6 @@ class CardCreator:
             s0, s1 = event.widget.index("sel.first"), event.widget.index("sel.last")
             iterative = s0
             isBold = True
-
             if s0 != '':
                 while float(iterative) < float(s1):
                     if not "underline_tag" in event.widget.tag_names(iterative):
@@ -254,7 +278,7 @@ class CardCreator:
                     else:
                         CardCreator.back_button_list[0].config(bg = '#ABBCFF')
                     CardCreator.underlined[not CardCreator.isFrontFocused] = True
-
+            
 
             # if float(start) <= float(s0) and float(end) >= float(s1):
             #         print("TRUE")
@@ -290,7 +314,26 @@ class CardCreator:
                     CardCreator.cursor_index = textBox.index("insert-2c")
                 elif args[2] == "insert":
                     CardCreator.cursor_index = textBox.index("insert-1c")
-                # elif args[2][0].isdigit():
+                    CardCreator.isModified = False
+                elif "end - 1" in args[2]:
+                    CardCreator.cursor_index = textBox.index( tkinter.END + "-2c")
+                    print(CardCreator.cursor_index)
+
+                elif args[2][0].isdigit():
+                    if args[2] == '0.0':
+                        hasIndex = False
+                    elif CardCreator.isMovement:
+                        print("IS MOVEMENT")
+                        CardCreator.isMovement = False
+                        CardCreator.cursor_index = textBox.index(args[2] + "-1c")
+                    elif not CardCreator.isModified:
+                        CardCreator.isModified = True
+                        hasIndex = False
+                    else:
+                        hasIndex = False
+                        CardCreator.isModified = False
+                        print("IS DRAG")
+
                     # if isCtrlRight:
                     #     CardCreator.cursor_index = textBox.index(args[2])
                     #     isCtrlRight = False
@@ -300,7 +343,7 @@ class CardCreator:
 
                     # if textBox.tag_ranges("sel"):
                     # CardCreator.evaluateSelection(textBox)
-
+                
                 else:
                     print(*args, "GREATER THAN 2")
                     hasIndex = False
@@ -387,7 +430,7 @@ class CardCreator:
 
                         while textBox.index(s0) != textBox.index(args[len(args) - 1]):
                             if isSelect and textBox.index(s0 + " +1c") == textBox.index(args[len(args) - 1]) and textBox.get(index1 = textBox.index(s0), index2 = textBox.index(args[len(args) - 1])) == '\n':
-                                if textBox.index(s0 + " +1c") == textBox.index(END):
+                                if textBox.index(s0 + " +1c") == textBox.index( tkinter.END):
                                     break
                             else:
                                 if CardCreator.isFrontFocused:
@@ -840,45 +883,56 @@ class CardCreator:
     def underlineText(button, textBox):
         if textBox.focus_get():
             if textBox.tag_ranges("sel"):
+                
+
                 s0, s1 = textBox.index("sel.first"), textBox.index("sel.last")
+
                 iteration = s0
                 if CardCreator.isFrontFocused:
                     combined_stacks_current_indexes = [el[2] for el in CardCreator.frontTag_undo_stack + CardCreator.frontTag_redo_stack]
                 else:
                     combined_stacks_current_indexes = [el[2] for el in CardCreator.backTag_undo_stack + CardCreator.backTag_redo_stack]
-
+                
 
                 while float(iteration) < float(s1):
-                    index = combined_stacks_current_indexes.index(iteration)
-                    if CardCreator.isFrontFocused:
-                        if index < len(CardCreator.frontTag_undo_stack):
-                            if not "underline_tag" in CardCreator.frontTag_undo_stack[index][1]:
-                                if button.cget("bg") == '#f0f0f0':
-                                    CardCreator.frontTag_undo_stack[index][1] += ("underline_tag",)
-                                    
-                            else:
-                                if button.cget("bg") != '#f0f0f0':
-                                    tag_list = list(CardCreator.frontTag_undo_stack[index][1])
-                                    tag_list.remove("underline_tag")
-                                    CardCreator.frontTag_undo_stack[index][1] = tuple(tag_list)
+                    if not iteration in combined_stacks_current_indexes:
+                        if button.cget("bg") == '#f0f0f0':
+                            textBox.tag_add("underline_tag", iteration)
                         else:
-                            if not "underline_tag" in CardCreator.frontTag_redo_stack[index][1]:
-                                if button.cget("bg") == '#f0f0f0':
-                                    CardCreator.frontTag_redo_stack[index][1] += ("underline_tag",)
+                            textBox.tag_remove("underline_tag", iteration)
+
+
+                    else:
+                        index = combined_stacks_current_indexes.index(iteration)
+                        if CardCreator.isFrontFocused:
+                            if index < len(CardCreator.frontTag_undo_stack):
+                                if not "underline_tag" in CardCreator.frontTag_undo_stack[index][1]:
+                                    if button.cget("bg") == '#f0f0f0':
+                                        CardCreator.frontTag_undo_stack[index][1] += ("underline_tag",)
+                                        
                                 else:
                                     if button.cget("bg") != '#f0f0f0':
-                                        tag_list = CardCreator.frontTag_redo_stack[index][1]
+                                        tag_list = list(CardCreator.frontTag_undo_stack[index][1])
                                         tag_list.remove("underline_tag")
-                                        CardCreator.frontTag_redo_stack[index][1] = tuple(tag_list)
-                                
-                                # CardCreator.frontTag_redo_stack[index][1].append("underline_tag")
-                    else:
-                        if index < len(CardCreator.backTag_undo_stack):
-                            if not "underline_tag" in CardCreator.backTag_undo_stack[index][1]:
-                                CardCreator.backTag_undo_stack[index][1] += ("underline_tag",)
+                                        CardCreator.frontTag_undo_stack[index][1] = tuple(tag_list)
+                            else:
+                                if not "underline_tag" in CardCreator.frontTag_redo_stack[index][1]:
+                                    if button.cget("bg") == '#f0f0f0':
+                                        CardCreator.frontTag_redo_stack[index][1] += ("underline_tag",)
+                                    else:
+                                        if button.cget("bg") != '#f0f0f0':
+                                            tag_list = CardCreator.frontTag_redo_stack[index][1]
+                                            tag_list.remove("underline_tag")
+                                            CardCreator.frontTag_redo_stack[index][1] = tuple(tag_list)
+                                    
+                                    # CardCreator.frontTag_redo_stack[index][1].append("underline_tag")
                         else:
-                            if not "underline_tag" in CardCreator.backTag_redo_stack[index][1]:
-                                CardCreator.backTag_redo_stack[index][1] += ("underline_tag",)       
+                            if index < len(CardCreator.backTag_undo_stack):
+                                if not "underline_tag" in CardCreator.backTag_undo_stack[index][1]:
+                                    CardCreator.backTag_undo_stack[index][1] += ("underline_tag",)
+                            else:
+                                if not "underline_tag" in CardCreator.backTag_redo_stack[index][1]:
+                                    CardCreator.backTag_redo_stack[index][1] += ("underline_tag",)       
 
                     iteration = textBox.index(iteration + "+1c")
 
@@ -932,11 +986,15 @@ class CardCreator:
         
         CardCreator.optionsFrame.createOptionsLabel()
         
-        backButton = Button(CardCreator.optionsFrame, text= "Back to Cards", width=15, height=2, font = "Arial 12", command = lambda: CardCreator.backToMenu())
+        backButton = tkinter.Button(CardCreator.optionsFrame, text= "Back to Cards", width=15, height=2, font = "Arial 12", command = lambda: CardCreator.backToMenu())
         backButton.grid(row = 1, column= 0, padx = 10, pady = 10) 
 
     @staticmethod
     def inputResponce(frontInput, backInput):
+        print(frontInput.tag_ranges("underline_tag"))
+        underline_locations = ''
+        for n in frontInput.tag_ranges("underline_tag"):
+            print(n.string)
         front = frontInput.get(1.0, "end-1c")
         back = backInput.get(1.0, "end-1c")
         if CardCreator.createBool:
@@ -946,7 +1004,7 @@ class CardCreator:
         else:
             CardCreator.crsr.execute("UPDATE cards SET front = \"" + frontInput.get(1.0, "end-1c") + "\", back = \"" + str(backInput.get(1.0, "end-1c")) + "\" WHERE c_id = " + str(CardCreator.currentCard[0]))
         
-        db.database().commit()
+        cd.Database().commit()
         CDeck.updateDeck()
 
         CardCreator.backToMenu()
