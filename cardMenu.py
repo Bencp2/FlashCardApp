@@ -7,7 +7,7 @@ import MainFrame as mf
 import TitleLabel as tl
 from CurrentDeck import CDeck
 from FrameApp import FrameApp
-from DeckCreator import DeckCreator
+import DeckCreator as dc
 # from CardCreator import CardCreator
 
 class cardMenu:
@@ -166,8 +166,8 @@ class cardMenu:
     @staticmethod
     def editDeckName():
         cardMenu.cardMenuDestroy()
-        DeckCreator.createDeckCreator(False)
-        DeckCreator.nameInput.setStartResponce(CDeck.deck[1])
+        dc.DeckCreator.createDeckCreator(False)
+        dc.DeckCreator.nameInput.setStartResponce(CDeck.deck[1])
 
 
 

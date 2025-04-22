@@ -1,13 +1,12 @@
 import tkinter
 import CreateDatabase as cd
 import window as w
-import cardMenu
 import MainFrame as mf
 import TitleLabel as tl
 from FrameApp import FrameApp
 import DeckCreator as dc
 from CurrentDeck import CDeck
-
+import CardMenu
 class deckMenu:
 
     crsr = cd.Database().cursor()
@@ -100,6 +99,6 @@ class deckMenu:
     def changeToCardMenu(curDeck):
         deckMenu.deckMenuDestroy()
         CDeck.changeDeck(curDeck)
-        cardMenu.cardMenu.cardMenuCreate()
+        CardMenu.cardMenu.cardMenuCreate()
 
         

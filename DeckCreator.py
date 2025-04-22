@@ -1,7 +1,7 @@
 import tkinter
 import CreateDatabase as cd
 import window as w
-import cardMenu as cm
+import CardMenu as cm
 import TitleLabel as tl
 from FrameApp import FrameApp
 from EntryApp import EntryApp
