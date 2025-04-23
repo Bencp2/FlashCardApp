@@ -12,27 +12,6 @@ class FrameApp(Frame):
         self.selected = crb.CurrentRadioButton()
         self.labelList = list()
 
-    # def provideIntVar(self):
-    #     return self.var
-    
-    # def provideBoolVar(self):
-    #     return self.boolvar
-    
-    # def getVar(self):
-    #     return self.var.get()
-
-    # def provideSelected(self):
-    #     return self.selected
-
-    # def changeSelected(self, button):
-    #     self.selected.changeSelected(button)
-
-    # def createIntVar(self):
-    #     self.var = IntVar()
-    
-    # def createBoolVar(self):
-    #     self.var = BooleanVar()
-
     def createRadioButton(self, text, value):
         self.radioButtonList.append(RadiobuttonApp(property(lambda: self), text, value))
         self.radioButtonList[len(self.radioButtonList) - 1].bind('<Button-1>', lambda event, rButton = self.radioButtonList[len(self.radioButtonList) - 1]: self.changeSelectedButton(rButton))
