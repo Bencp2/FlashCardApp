@@ -30,8 +30,7 @@ class FrameApp(Frame):
     # def createIntVar(self):
     #     self.var = IntVar()
     
-    # def createBoolVar(self):
-    #     self.var = BooleanVar()
+
 
     def createRadioButton(self, text, value):
         self.radioButtonList.append(RadiobuttonApp(property(lambda: self), text, value))
