@@ -24,5 +24,3 @@ Priority descending
     Reasoning: To make the code more understandable to others and myself if I ever take a long break
 
 6. Change cursor executions to become more protected from SQL injection by writting them in a more secure way.
-
-7.
